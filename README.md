@@ -1,4 +1,4 @@
-<img src="docs/logo.png" width="100px"></img>
+<img src="docs/logo.png" width="100"></img>
 
 ## Standardization Format
 
