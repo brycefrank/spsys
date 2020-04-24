@@ -1,14 +1,18 @@
+![logo](docs/logo.png)
+
 ## Standardization Format
 
 This is a temporary idea for standard input for variance estimation using `sys` given a set of arbitrary (plot-level) attributes.
 
 ```
-
-
+x   - x Coordinate
+y   - y Coordinate
+z_1 - First attribute
+...
+z_R - Rth attribute
 ```
 
 
 ## Variance Estimators
 
-Horvitz-Thompson
 Stevens and Olsen (2003)
