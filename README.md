@@ -1,4 +1,4 @@
-<img src="docs/logo.png" width="100"></img>
+<img src="docs/logo.png" width="60"></img> **sys** is an R package that allows users to explore systematic variance estimators.
 
 ## Standardization Format
 
