@@ -19,7 +19,7 @@ make_pop <- function(w, h) {
 
 #' @param a The length of a side of the equilateral triangle. Must be an
 #' integer prepresenting the number of pixels (does not have to be)
-samp_tri_grid <- function(pop_mat, pop_df, a) {
+samp_tri_grid <- function(pop_mat, pop_df, a, r=FALSE) {
   colnames(pop_df) <- c('x', 'y', 'z')
   h <- dim(pop_mat)[[1]]
   w <- dim(pop_mat)[[2]]
@@ -40,7 +40,12 @@ samp_tri_grid <- function(pop_mat, pop_df, a) {
   grid2[,1] <- grid2[,1] + a/2 
   
   grid <- rbind(grid1, grid2)
-  grid <- round(grid[(grid[,1] <= w) & (grid[,2] <= h),])
+  grid <- grid[(grid[,1] <= w) & (grid[,2] <= h),]
+  
+  if(r) {
+    grid <- round(grid)
+  }
+  
   names(grid) <- c('x', 'y')
   grid <- data.table(grid)
   
