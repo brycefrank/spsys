@@ -78,7 +78,10 @@ index_hex <- function(hex_polys) {
 #' @param start_pos the starting position
 #' @param a The order of the subset: 2 represents sampling every other
 #' @return A dataframe of row and column indices that have been sampled.
-subsample_hex <- function(hex_ix, start_pos, a) {
+subsample_hex <- function(hex_polys, start_pos, a) {
+  hex_ix <- index_hex(hex_polys)
+  hex_polys@data <- cbind(hex_polys@data, hex_ix)
+  
   max_row <- max(hex_ix$r)
   max_col <- max(hex_ix$c)
   
@@ -105,7 +108,10 @@ subsample_hex <- function(hex_ix, start_pos, a) {
     j <- j + 1
   }
   
-  return(data.frame(r = r_samp, c = c_samp))
+  samp_ix   <- data.frame(r = r_samp, c = c_samp)
+  # TODO the spatial polygons is a lot of extra baggage that may not be needed
+  hex_polys <- sp::merge(hex_polys, samp_ix, by=c('r', 'c'), all.x=FALSE, all.y=TRUE)
+  return(hex_polys)
 }
 
 #' Creates a dataframe of hexagon indices for use in `subsample_sq`.

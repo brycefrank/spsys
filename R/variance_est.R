@@ -5,7 +5,9 @@ library(ggplot2)
 #' Estimates the sampling variance of the mean under SRSWoR
 var_srs <- function(samp, N) {
   n <- nrow(samp)
-  return ((n - 1)^(-1) * n^(-1) * (1 - (n / N)) * sum((samp$z - mean(samp$z))^2))
+  fpc <- 1 - n/N
+  var_mu <- (n - 1)^(-1) * n^(-1) *  sum((samp$z - mean(samp$z))^2)
+  return(var_mu * fpc)
 }
 
 #' Estimates the sampling variance of the mean under STSRSWoR
@@ -25,12 +27,38 @@ var_strs <- function(samp, N) {
   
 }
 
-#' Estimates the sampling varaince of the mean using 
+#' Estimates the sampling variance of the mean using 
 #' the Stevens and Olsen (2003) estimator.
 var_so <- function(samp, N) {
   wt <- localmean.weight(samp$x, samp$y, samp$pi_i)
-  var_total <- localmean.var(samp$z, wt)
-  return((1/N) * var_total) # TODO Why is it 1/N and not 1/N^2?
+  var_total <- localmean.var(samp$z/samp$pi_i, wt)
+  n <- nrow(samp)
+  fpc <- 1 - n/N
+  return((1/N^2) * (1-(n/N))  * var_total) # TODO Why is it 1/N and not 1/N^2?
+}
+
+#' Estimates the sampling variance of the mean using
+#' finite population block kriging
+var_fpbk <- function(samp, N) {
+  centroids <- gCentroid(samp, byid=TRUE)@coords
+  slm_df <- cbind(samp@data, centroids)
+  
+  # TODO sptotal does a lot of work computing the distance matrix each time,
+  # it could be possible to compute a distance matrix in the outermost simulation
+  # procedure and then simply index it based on what subsample is selected.
+  # sptotal is not well modularized so it will take some "ripping out" of functions
+  # to do this, but it will save a lot of simulation time
+  
+  # maybe move on to other estimators before getting too involved here, but I like 
+  # the idea of using FPBK as a very basic model-based variance estimator
+  slm <- slmfit(VOL ~ 1, data=slm_df, xcoordcol='x', ycoordcol='y')
+  slm.pred <- predict(slm)
+  
+  var_total <- slm.pred$PredVar[1,1]
+  n <- sum(!is.na(slm_df$VOL))
+  fpc <- 1 - n/N
+  
+  return(var_total * fpc * 1/N^2)
 }
 
 #' Estimates the sampling variance of the mean using 
