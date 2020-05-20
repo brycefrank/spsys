@@ -4,7 +4,11 @@ library(raster)
 library(dplyr)
 library(maptools)
 
-cast_hex_grid <- function(plots) {
+
+#' Create a hexagon grid for an input set of plots
+#' 
+#' @return A SpatialPolygonsDataFrame of hexagons with attributes appended
+cast_hex_grid <- function(plots, side_to_side = 5187, attributes=c('z_1')) {
   bbox <- bbox(plots)
   min_x <- bbox[1,1]
   max_x <- bbox[1,2]
@@ -14,7 +18,6 @@ cast_hex_grid <- function(plots) {
   bbox <- Polygons(list(Polygon(bbox)), 1)
   bbox <- SpatialPolygons(list(bbox))
   
-  side_to_side <- 5187 #meters
   HexPts <- spsample(bbox, type="hexagonal", cellsize=side_to_side)
   HexPols <- HexPoints2SpatialPolygons(HexPts)
   row.names(HexPols) <- as.character(seq(1, length(HexPols)))
@@ -26,8 +29,8 @@ cast_hex_grid <- function(plots) {
   
   ov <- over(plots, HexPols)
   colnames(ov) <- 'hex_ix'
-  ov$VOL <- plots@data$VOL
-  ov <- data.frame(plt_ix = as.numeric(row.names(ov)), hex_ix = ov[,'hex_ix'], VOL=ov[,'VOL'])
+  ov[,attributes] <- plots@data[,attributes]
+  ov$plt_ix <- as.numeric(row.names(ov))
   
   first <- ov %>% group_by(hex_ix) %>% slice(1)
   HexPols <- sp::merge(HexPols, first, by.y='hex_ix', by.x='id')

@@ -16,4 +16,7 @@ pi_i - The first order inclusion probability
 
 ## Variance Estimators
 
-Stevens and Olsen (2003)
+### Local Variance Estimators
+
+- Stevens and Olsen (2003)
+- Matern (1980)

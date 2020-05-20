@@ -2,7 +2,7 @@ devtools::load_all()
 block_hex <- readRDS('data/block_hex.RDS')
 
 plot(subsample_hex(block_hex, c(1,1), 10))
-mu <- mean(block_hex@data$VOL)
+mu <- mean(block_hex@data$z_1)
 
 estimators <- list(
   'var_srs' = var_srs,
@@ -28,7 +28,7 @@ compare_estimators <- function(a_vec, pop, estimators) {
       subsamp_ix <- subsample_hex(pop, start, a)
       subsamp <- sp::merge(pop, subsamp_ix, by=c('r', 'c'), all.x=FALSE, all.y=TRUE)
       n <- nrow(subsamp)
-      means <- c(means, mean(subsamp$VOL))
+      means <- c(means, mean(subsamp$z_1))
       
       #Convert subsamp to a dataframe compatible with the variance estimators
       subsamp_df <- subsamp@data
@@ -68,10 +68,10 @@ compare_estimators <- function(a_vec, pop, estimators) {
   
 }
 
-a_vec <- c(5,6,7)
+a_vec <- c(8)
 results <- compare_estimators(a_vec, block_hex, estimators)
 
-
-#ggplot() +
-#  geom_point(data=results[[2]], aes(x=a, y=var_srs), color='red') +
-#  geom_line(data=results[[1]], aes(x=a, y=v_sys), color='black')
+ggplot() +
+  geom_point(data=results[[2]], aes(x=a, y=var_mat_hex), color='red') +
+  geom_point(data=results[[2]], aes(x=a, y=var_srs), color='blue') +
+  geom_line(data=results[[1]], aes(x=a, y=v_sys), color='black')

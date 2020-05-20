@@ -25,7 +25,6 @@ var_strs <- function(samp, N) {
   }
   
   return(strs_var)
-  
 }
 
 #' Estimates the sampling variance of the mean using 
@@ -77,12 +76,17 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
+mat_contrast <- function(tbl)  {
+  print(tbl)
+}
+
 
 #' Matern's variance estimator modified for hexagonal grids
-var_mat_hex <- function(samp, a) {
+var_mat_hex <- function(samp, a, attributes) {
   # Translate to the base coordinate system
   t_ix <-  translate_hex_ix(samp[,c('r', 'c')], a)
-  samp$VOL <- samp$VOL - mean(samp$VOL)
+  
+  z_bar <- mean(samp$z_1)
  
   # Subsample these translated indices at a=3 at 1,1
   # TODO may make sense to do this at all possible indices
@@ -98,43 +102,42 @@ var_mat_hex <- function(samp, a) {
     
     neighborhood[,1] <- c(row-1, row-1, row, row, row+1, row+1)
     neighborhood[,2] <- c(col-1, col+1, col-2, col+2, col-1, col+1)
-    neighborhood[,3] <- c(1, 2, 0, 0, 2, 1)
+    neighborhood[,3] <- c(1, 1, 0, 0, -1, -1)
     
     neighborhood <- data.frame(neighborhood)
     neighborhood$r_t <- row
     neighborhood$c_t <- col
     neighborhoods[[i]] <- neighborhood
-    
-    
   }
   
  neighborhoods <- bind_rows(neighborhoods)
  colnames(neighborhoods)[1:3]  <- c('r_n', 'c_n', 'grp')
  samp[,c('r_t', 'c_t')] <- t_ix
  
+ # A dataframe such that each neighbor point is paired with its center
+ neighborhoods <- merge(neighborhoods, samp, by.x=c('r_n', 'c_n'), by.y=c('r_t', 'c_t'), all.x=TRUE)
  
- neighborhoods <- merge(neighborhoods, samp, by.x=c('r_n', 'c_n'), by.y=c('r_t', 'c_t'))
+ # Get the number of neighborhoods with at least one point in Q
+ in_Q <- neighborhoods %>%
+   mutate(z_ct = z_1 - z_bar) %>%
+   replace_na(list(z_ct=0))
  
- grp_sums <- neighborhoods %>%
-   group_by(r_t, c_t, grp) %>%
-   summarize(grp_sum=sum(VOL), n_q_g = n()) %>%
-   filter(n_q_g==2)
+ # What is the size of each group?
+ n_groups <- neighborhoods %>%
+   filter(is.na(r)) %>%
+   group_by(r_t, c_t) %>%
+   summarize(n = n())
+  
+ q <- 9
+ n <- nrow(samp)
  
- grp_1 <- filter(grp_sums, grp==1)
- n_q <- (nrow(grp_1)*2)^2
+ Ti <- in_Q %>%
+   group_by(r_t, c_t) %>%
+   summarize(test = sum(grp * z_ct)^2 / 4)
  
- point_vars <- filter(grp_sums, grp==2) %>%
-   merge(grp_1, by=c('r_t', 'c_t')) %>%
-   mutate(sq_diff = (grp_sum.x - grp_sum.y)^2)
+ var <- (q * sum(Ti$test)) / n^2
  
- sum_q <- mean(point_vars$sq_diff / n_q)
- Q <- nrow(point_vars)
- 
- if(Q == 0) {
-   return(NA) 
- } else {
-   return(sum_q / Q)
- }
+ return(var)
 }
 
 

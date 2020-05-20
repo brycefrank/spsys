@@ -17,12 +17,14 @@ newcrs <- CRS("+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
 plots <- SpatialPointsDataFrame(spTransform(plots, newcrs), data = plots_o)
 
 # Fake data just to get the next part running
-plots@data$VOL <- rnorm(length(plots))
+plots@data$z_1 <- rnorm(length(plots))
 block <- cast_hex_grid(plots)
+
+index_hex(block)
 block@data <- cbind(block@data, index_hex(block))
 
-n_missing <- sum(is.na(block@data$VOL))
-block@data[is.na(block@data$VOL), 'VOL'] <- rnorm(n_missing)
+n_missing <- sum(is.na(block@data$z_1))
+block@data[is.na(block@data$z_1), 'z_1'] <- rnorm(n_missing)
 saveRDS(block, file="data/block_hex.RDS")
 
 or_hex <- block[complete.cases(block@data),]
