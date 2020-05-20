@@ -1,6 +1,7 @@
 # Variance estimators for systematic samples with unequal probability sampling
 library(spsurvey)
 library(ggplot2)
+library(FNN)
 
 #' Estimates the sampling variance of the mean under SRSWoR
 var_srs <- function(samp, N) {
@@ -34,7 +35,7 @@ var_so <- function(samp, N) {
   var_total <- localmean.var(samp$z/samp$pi_i, wt)
   n <- nrow(samp)
   fpc <- 1 - n/N
-  return((1/N^2) * (1-(n/N))  * var_total) # TODO Why is it 1/N and not 1/N^2?
+  return((1/N^2) * (1-(n/N))  * var_total) 
 }
 
 #' Estimates the sampling variance of the mean using
@@ -60,6 +61,83 @@ var_fpbk <- function(samp, N) {
   
   return(var_total * fpc * 1/N^2)
 }
+
+#' For a given set of (subsampled) hexagonal indices, translate
+#' to the base coordinate system.
+translate_hex_ix <- function(hex_ix, a) {
+  r <- hex_ix$r
+  c <- hex_ix$c
+  
+  min_r <- min(r)
+  min_c <- min(c)
+  
+  r_t <- (r - min_r) / a + 1
+  c_t <- (c - min_c) / a + 1
+  
+  return(data.frame(r_t , c_t))
+}
+
+
+#' Matern's variance estimator modified for hexagonal grids
+var_mat_hex <- function(samp, a) {
+  # Translate to the base coordinate system
+  t_ix <-  translate_hex_ix(samp[,c('r', 'c')], a)
+  samp$VOL <- samp$VOL - mean(samp$VOL)
+ 
+  # Subsample these translated indices at a=3 at 1,1
+  # TODO may make sense to do this at all possible indices
+  # and take the mean??
+  centers <- subsample_hex(t_ix, c(1,1), 3)
+  
+  # TODO umm probably slow but works for now.
+  neighborhoods <- list()
+  for(i in 1:nrow(centers)) {
+    row <- centers[i, 1]
+    col <- centers[i, 2]
+    neighborhood <- matrix(NA, nrow=6, ncol=3)
+    
+    neighborhood[,1] <- c(row-1, row-1, row, row, row+1, row+1)
+    neighborhood[,2] <- c(col-1, col+1, col-2, col+2, col-1, col+1)
+    neighborhood[,3] <- c(1, 2, 0, 0, 2, 1)
+    
+    neighborhood <- data.frame(neighborhood)
+    neighborhood$r_t <- row
+    neighborhood$c_t <- col
+    neighborhoods[[i]] <- neighborhood
+    
+    
+  }
+  
+ neighborhoods <- bind_rows(neighborhoods)
+ colnames(neighborhoods)[1:3]  <- c('r_n', 'c_n', 'grp')
+ samp[,c('r_t', 'c_t')] <- t_ix
+ 
+ 
+ neighborhoods <- merge(neighborhoods, samp, by.x=c('r_n', 'c_n'), by.y=c('r_t', 'c_t'))
+ 
+ grp_sums <- neighborhoods %>%
+   group_by(r_t, c_t, grp) %>%
+   summarize(grp_sum=sum(VOL), n_q_g = n()) %>%
+   filter(n_q_g==2)
+ 
+ grp_1 <- filter(grp_sums, grp==1)
+ n_q <- (nrow(grp_1)*2)^2
+ 
+ point_vars <- filter(grp_sums, grp==2) %>%
+   merge(grp_1, by=c('r_t', 'c_t')) %>%
+   mutate(sq_diff = (grp_sum.x - grp_sum.y)^2)
+ 
+ sum_q <- mean(point_vars$sq_diff / n_q)
+ Q <- nrow(point_vars)
+ 
+ if(Q == 0) {
+   return(NA) 
+ } else {
+   return(sum_q / Q)
+ }
+}
+
+
 
 #' Estimates the sampling variance of the mean using 
 #' a Monte Carlo simulation. Generally treated as the 
