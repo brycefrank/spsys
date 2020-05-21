@@ -195,6 +195,11 @@ var_nnbh_hex <- function(samp, a) {
  
 }
 
+#' The Dorazio (2003) variance estimator.
+var_dorazio <- function(samp, N) {
+  C <- gearys_C(samp$z, samp[,c('x', 'y')])
+  var_srs(samp, N) * C
+}
 
 
 

@@ -6,8 +6,7 @@ mu <- mean(block_hex@data$z_1)
 
 estimators <- list(
   'var_srs' = var_srs,
-  'var_mat_hex' = var_mat_hex,
-  'var_nnbh_hex' = var_nnbh_hex
+  'var_dorazio' = var_dorazio
 )
 
 compare_estimators <- function(a_vec, pop, estimators) {
@@ -73,6 +72,6 @@ a_vec   <- c(4,5,6,7,8,9,10)
 results <- compare_estimators(a_vec, block_hex, estimators)
 
 ggplot() +
-  geom_point(data=results[[2]], aes(x=a, y=var_nnbh_hex), color='red') +
+  geom_point(data=results[[2]], aes(x=a, y=var_dorazio), color='red') +
   geom_point(data=results[[2]], aes(x=a, y=var_srs), color='blue') +
   geom_line(data=results[[1]], aes(x=a, y=v_sys), color='black')
