@@ -20,3 +20,4 @@ pi_i - The first order inclusion probability
 
 - Stevens and Olsen (2003)
 - Matern (1980)
+- Aune-Lundberg & Strand (2014)

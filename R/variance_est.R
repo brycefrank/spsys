@@ -2,6 +2,7 @@
 library(spsurvey)
 library(ggplot2)
 library(FNN)
+library(tidyr)
 
 #' Estimates the sampling variance of the mean under SRSWoR
 var_srs <- function(samp, N) {
@@ -76,11 +77,6 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
-mat_contrast <- function(tbl)  {
-  print(tbl)
-}
-
-
 #' Matern's variance estimator modified for hexagonal grids
 var_mat_hex <- function(samp, a, attributes) {
   # Translate to the base coordinate system
@@ -94,6 +90,8 @@ var_mat_hex <- function(samp, a, attributes) {
   centers <- subsample_hex(t_ix, c(1,1), 3)
   
   # TODO umm probably slow but works for now.
+  # TODO something is causing zero estimates in some configurations
+  # TODO used in other functions, take out and move to neighborhood.r (will also be the home of the rectangular versions)
   neighborhoods <- list()
   for(i in 1:nrow(centers)) {
     row <- centers[i, 1]
@@ -102,7 +100,7 @@ var_mat_hex <- function(samp, a, attributes) {
     
     neighborhood[,1] <- c(row-1, row-1, row, row, row+1, row+1)
     neighborhood[,2] <- c(col-1, col+1, col-2, col+2, col-1, col+1)
-    neighborhood[,3] <- c(1, 1, 0, 0, -1, -1)
+    neighborhood[,3] <- c(1, 1, 1, -1, -1, -1)
     
     neighborhood <- data.frame(neighborhood)
     neighborhood$r_t <- row
@@ -139,6 +137,65 @@ var_mat_hex <- function(samp, a, attributes) {
  
  return(var)
 }
+
+#' Calculate the variance using a denominator of n
+#' instead of n-1
+pop_var <- function(z) {
+  n <- length(z)
+  ssq <- sum((z - mean(z))^2)
+  ssq/n
+}
+
+#' Non-overlapping neighborhood variance
+#' estimator for hexagonal nearest neighbors.
+var_nnbh_hex <- function(samp, a) {
+  # Translate to the base coordinate system
+  t_ix <-  translate_hex_ix(samp[,c('r', 'c')], a)
+  centers <- subsample_hex(t_ix, c(1,1), 3)
+  samp[,c('r_t', 'c_t')] <- t_ix
+  
+  neighborhoods <- list()
+  for(i in 1:nrow(centers)) {
+    row <- centers[i, 1]
+    col <- centers[i, 2]
+    neighborhood <- matrix(NA, nrow=7, ncol=2)
+    
+    neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
+    neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
+    
+    neighborhood <- data.frame(neighborhood)
+    neighborhood$r_t <- row
+    neighborhood$c_t <- col
+    neighborhoods[[i]] <- neighborhood
+  }
+  
+ neighborhoods <- bind_rows(neighborhoods)
+ colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
+ 
+ N <- nrow(samp)
+ N_neighbs <- neighborhoods %>%
+   group_by(r_t, c_t) %>%
+   summarize(n=n())
+ 
+ N_neighbs <- nrow(N_neighbs)
+ 
+ neighborhoods <- merge(neighborhoods, samp, by.x=c('r_n', 'c_n'), by.y=c('r_t', 'c_t'), all.x=TRUE)
+ neighborhoods <- neighborhoods %>%
+   filter(!is.na(z_1)) %>%
+   group_by(r_t, c_t) %>%
+   summarize(pop_var = pop_var(z_1), q_j = n()) %>%
+   mutate(N_j = q_j * a^2) %>%
+   mutate(w_j_sq = (N_j / N)^2, fpc = ((N_j - q_j) / N_j)) %>%
+   mutate(nbh_var = (1/N_neighbs)^2 *  (pop_var / q_j) * fpc) # TODO N_neighbs needs to be fixed
+ 
+ sum(neighborhoods$nbh_var)
+ 
+ #neighborhoods %>%
+#   group_by()
+ 
+}
+
+
 
 
 

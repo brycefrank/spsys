@@ -6,7 +6,8 @@ mu <- mean(block_hex@data$z_1)
 
 estimators <- list(
   'var_srs' = var_srs,
-  'var_mat_hex' = var_mat_hex
+  'var_mat_hex' = var_mat_hex,
+  'var_nnbh_hex' = var_nnbh_hex
 )
 
 compare_estimators <- function(a_vec, pop, estimators) {
@@ -46,7 +47,7 @@ compare_estimators <- function(a_vec, pop, estimators) {
         
         if(names(estimators)[[k]] == 'var_fpbk')  {
           subsamp_df <- merge(pop[,c('plt_ix'), drop=FALSE], subsamp)
-        } else if (names(estimators)[[k]] == 'var_mat_hex') {
+        } else if (names(estimators)[[k]] %in% c('var_mat_hex', 'var_nnbh_hex')) {
           est_vars_i[j,k] <- v(subsamp@data, a)
         } else{
           est_vars_i[j,k] <- v(subsamp_df, N)
@@ -68,10 +69,10 @@ compare_estimators <- function(a_vec, pop, estimators) {
   
 }
 
-a_vec <- c(8)
+a_vec   <- c(4,5,6,7,8,9,10)
 results <- compare_estimators(a_vec, block_hex, estimators)
 
 ggplot() +
-  geom_point(data=results[[2]], aes(x=a, y=var_mat_hex), color='red') +
+  geom_point(data=results[[2]], aes(x=a, y=var_nnbh_hex), color='red') +
   geom_point(data=results[[2]], aes(x=a, y=var_srs), color='blue') +
   geom_line(data=results[[1]], aes(x=a, y=v_sys), color='black')
