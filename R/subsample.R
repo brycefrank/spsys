@@ -54,29 +54,6 @@ transform_coords <- function(coords) {
   
 }
 
-#' Creates a dataframe of hexagon indices for use in `subsample_hex`
-#' 
-#' @param hex_polys A SpatialPolygonsDataFrame of a hexagon grid.
-#' @return A dataframe with two columns, r and c, that correspond to row and column indices
-#' of the hexagon grid.
-index_hex <- function(hex_polys) {
-  top_points <- matrix(0, nrow=length(hex_polys@polygons), ncol=2)
-  i <- 1
-  for(polygon in hex_polys@polygons) {
-    poly_coords <- polygon@Polygons[[1]]@coords
-    max_y_ix <- which(poly_coords[,2] == max(poly_coords[,2]))
-    
-    if(length(max_y_ix) > 1) {
-      max_y_ix <- max_y_ix[[1]]
-    }
-    
-    top_points[i,] <- poly_coords[max_y_ix,]
-    i <- i + 1
-  }
-  
-  hex_ix <- transform_coords(top_points)
-  return(hex_ix)
-}
 
 #' Subsamples a dataframe of hexagonal indices produced by the `index_hex` function.
 #' For some specified starting index and sampling interval, subsamples a hexagonal index 
