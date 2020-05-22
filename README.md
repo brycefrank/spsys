@@ -13,10 +13,10 @@ For example, we can load in a set of points from a hexagonal grid:
 ```{r}
 
 hex_points <- readOGR('my_hex_points.shp')
-hex_frame <- load_hex(hex_points, c('vol', 'ba'))
+hex_frame <- HexFrame(hex_points, c('vol', 'ba'))
 ```
 
-The input function `load_hex` takes two arguments. A `SpatialPointsDataFrame` and a vector of column names that indicate attributes we are interested in conducting the analyeses on. Here we indicate volume (vol) and basal area (ba) as our attributes of interest. `load_hex`, and its sister function `load_rect` (for rectangular systematic samples), achieve several things. First, the points are cast onto a set of polygons representing the tesselation of the study area. Second, they implement a standardized indexing system that is used in several variance estimation functions. Finally, they provide a standardized interface for different types of analysis functions.
+`HexFrame` takes two arguments: a `SpatialPointsDataFrame` and a vector of column names that indicate attributes we are interested in conducting the analyses on. Here we indicate volume (vol) and basal area (ba) as our attributes of interest. `load_hex`, and its sister function `load_rect` (for rectangular systematic samples), achieve several things. First, the points are cast onto a set of polygons representing the tesselation of the study area. Second, they implement a standardized indexing system that is used in several variance estimation functions. Finally, they provide a standardized interface for different types of analysis functions.
 
 The `hex_frame` variable now represents an object of the `SysFrame` class.
 
