@@ -2,6 +2,8 @@
 
 Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of these quantities has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `sys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. More specifically, `sys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson estimator.
 
+`sys` supports both hexagonal and rectangular grids and has variance estimators implemented specifically for both configurations.
+
 ## Getting Started
 
 `sys` operates on the `sp` package `SpatialPointsDataFrame` class. 
@@ -29,7 +31,11 @@ N <- 10000
 var_srs(hex_frame, N=N)
 ```
 
-### Subsampling
+Please see the vignette for formal descriptions of the variance estimators, their required arguments and other relavent details.
+
+### Variance Assessment
+
+`sys` provides two ways to assess the behavior of variance estimators: via synthetic populations and via subsampling.
 
 One way to assess the performance of variance estimators is to treat an existing `SysFrame` as a population, and subsample repeatedly from it. `sys` enables subsampling using the following
 

@@ -25,10 +25,9 @@ translate_hex_ix <- function(hex_ix, a) {
 #' @param grouping a vector of 7 elements assigning contrast coefficients to each neighborhood point
 #' @return a dataframe with columns r and c (the original sample positions) and
 #' columns r_n and c_n that are the coordinates of the neighbors.
-get_hex_neighborhoods <- function(hex_ix, a, contrasts=NA) {
-  t_ix <-  translate_hex_ix(hex_ix, a)
-  centers <- subsample_hex(t_ix, c(1,1), 3)
-  hex_ix[,c('r_t', 'c_t')] <- t_ix
+get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
+  #t_ix <-  translate_hex_ix(hex_ix, a)
+  centers <- subsample_hex(hex_ix, c(1,1), 3)
   
   neighborhoods <- list()
   for(i in 1:nrow(centers)) {
@@ -39,7 +38,7 @@ get_hex_neighborhoods <- function(hex_ix, a, contrasts=NA) {
     neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
     neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
     
-    if(!is.na(grouping)) {
+    if(!is.na(contrasts)) {
       cbind(neighborhood, contrasts)
     }
     
@@ -53,8 +52,8 @@ get_hex_neighborhoods <- function(hex_ix, a, contrasts=NA) {
  colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
  
  # "Untranslate" the neighborhoods
- neighborhoods[,c('r', 'r_n')] <- a*(neighborhoods[,c('r', 'r_n')] - 1) + min(hex_ix[,'r'])
- neighborhoods[,c('c', 'c_n')] <- a*(neighborhoods[,c('c', 'c_n')] - 1) + min(hex_ix[,'c'])
+ # neighborhoods[,c('r', 'r_n')] <- a*(neighborhoods[,c('r', 'r_n')] - 1) + min(hex_ix[,'r'])
+ # neighborhoods[,c('c', 'c_n')] <- a*(neighborhoods[,c('c', 'c_n')] - 1) + min(hex_ix[,'c'])
  return(neighborhoods)
 }
 

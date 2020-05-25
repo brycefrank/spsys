@@ -5,7 +5,6 @@ setGeneric('var_srs', function(sys_frame, ...) {
   standardGeneric('var_srs')
 })
 
-
 # TODO could be possible to attach N in the case of subsamples
 setMethod('var_srs', signature(sys_frame='SysFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_) {
@@ -23,7 +22,6 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
     return(var_mu)
   }
 )
-
 
 #' Computes the variance estimate of a systematic 
 #' sample using the Stevens and Olsen (2003) local mean estimator.
@@ -69,3 +67,17 @@ so_att <- function(att, att_df, pi_i, wt) {
   z <- att_df[,att]
   localmean.var(z/pi_i, wt)
 }
+
+setGeneric('var_mat', function(sys_frame, ...) {
+  standardGeneric('var_mat')
+})
+
+setMethod('var_mat', signature(sys_frame='HexFrame'),
+  # TODO fix contrast defaults to something that makes sense
+  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(-1,-1,-1, 1, 1, 1)) {
+    neighborhoods <- get_hex_neighborhoods(sys_frame@data[,c('r','c')], contrasts=contrasts)
+    neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    
+    # TODO finish this
+  }
+)
