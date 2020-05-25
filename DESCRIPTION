@@ -9,3 +9,11 @@ Depends: R (>= 3.1.0)
 License: MIT
 LazyData: true
 RoxygenNote: 6.1.1
+Collate: 
+    'SysFrame.R'
+    'HexFrame.R'
+    'cast_hex.R'
+    'sim_pop.R'
+    'spatial.R'
+    'subsample.R'
+    'variance_est.R'

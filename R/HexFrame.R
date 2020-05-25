@@ -1,33 +1,25 @@
-setClass('SysFrame', contains='SpatialPolygonsDataFrame')
+#' @include SysFrame.R
 
-SysFrame <- function(splydf) {
-  sys_frame <- new('SysFrame')
-  sys_frame@data <- splydf@data
-  sys_frame@bbox <- splydf@bbox
-  sys_frame@proj4string <- splydf@proj4string
-  sys_frame@plotOrder <- splydf@plotOrder
-  sys_frame@polygons <- splydf@polygons
-  sys_frame
-}
 
 setClass('HexFrame', contains='SysFrame',
          slots = list(
-           attributes='character',
            a='integer'
          ))
 
-
-HexFrame <- function(splydf, attributes) {
-  sys_frame <- SysFrame(splydf)
+# TODO not sure why this needs to be repeated from sysframe
+# is it possible to do something like callNextMethod but for
+# instantiation?
+HexFrame <- function(splydf, attributes=character()) {
+  sys_frame <- SysFrame(splydf, attributes)
   
   hex_frame <- new('HexFrame')
-  hex_frame@attributes <- attributes
   hex_frame@data <- sys_frame@data
   hex_frame@bbox <- sys_frame@bbox
   hex_frame@proj4string <- sys_frame@proj4string
   hex_frame@plotOrder <- sys_frame@plotOrder
   hex_frame@polygons <- sys_frame@polygons
   hex_frame@data[,c('r', 'c')] <- index_hex(hex_frame@polygons)
+  hex_frame@attributes <- sys_frame@attributes
   
   hex_frame
 }
@@ -35,6 +27,12 @@ HexFrame <- function(splydf, attributes) {
 setGeneric('subsample', function(object, start_pos, a){
   standardGeneric('subsample')
 })
+
+setMethod('merge', signature(x='HexFrame', y='data.frame'),
+  function(x, y, ...) {
+    HexFrame(callNextMethod(x,y, ...), attributes=x@attributes)
+  }
+)
 
 setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   max_row <- max(object@data$r[!is.na(object@data$r)])
@@ -64,9 +62,8 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   }
   
   samp_ix   <- data.frame(r = r_samp, c = c_samp)
-  #samp <- HexFrame(sp::merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE))
-  #fmerge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
-  foo(object, 2)
+  samp <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
+  return(samp)
 })
 
 #' Creates a dataframe of hexagon indices for use in `subsample_hex`
