@@ -5,12 +5,12 @@ library(FNN)
 library(tidyr)
 
 #' Estimates the sampling variance of the mean under SRSWoR
-var_srs <- function(z, N) {
-  n <- length(z)
-  fpc <- 1 - n/N
-  var_mu <- (n - 1)^(-1) * n^(-1) *  sum((z - mean(samp$z))^2)
-  return(var_mu * fpc)
-}
+#var_srs <- function(z, N) {
+#  n <- length(z)
+#  fpc <- 1 - n/N
+#  var_mu <- (n - 1)^(-1) * n^(-1) *  sum((z - mean(samp$z))^2)
+#  return(var_mu * fpc)
+#}
 #
 ##' Estimates the sampling variance of the mean using 
 ##' the Stevens and Olsen (2003) estimator.

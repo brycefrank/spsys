@@ -1,6 +1,6 @@
 <img src="docs/logo.png" width="60"></img><br> **sys** is an R package that allows users to explore systematic variance estimators.
 
-Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of these quantities has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `sys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population.
+Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of these quantities has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `sys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. More specifically, `sys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson estimator.
 
 ## Getting Started
 
@@ -34,13 +34,26 @@ var_srs(hex_frame, N=N)
 One way to assess the performance of variance estimators is to treat an existing `SysFrame` as a population, and subsample repeatedly from it. `sys` enables subsampling using the following
 
 ```{r}
-subsample(hex_frame, c(1,1), 3)
+a <- 3
+subsample(hex_frame, c(1,1), a)
 ```
 
-where `c(1,1)` is the starting position in index space and `3` is the sampling interval. Fans of the `dplyr` package may want to use pipe operators. That is also possible
+where `c(1,1)` is the starting position in index space and `a=3` is the sampling interval. Fans of the `dplyr` package may want to use pipe operators. That is also possible
 
 ```{r}
-hex_frame %>% subsample(c(1,1), 3)
+hex_frame %>% subsample(c(1,1), a)
+```
+
+Of course we will be interested in all possible subsamples. Here we iterate over all possible subsamples and compute the simple random sampling with replacement estimator
+
+```{r}
+all_starts <- subsample_starts(a)
+
+for(i in 1:nrow(all_starts)) {
+  subsample(hex_frame, all_starts[i,]) %>%
+    var_srs(fpc=FALSE)
+}
+
 ```
 
 ## Standardization Format

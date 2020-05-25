@@ -16,9 +16,8 @@ HexFrame <- function(splydf, attributes=character()) {
   hex_frame@data <- sys_frame@data
   hex_frame@bbox <- sys_frame@bbox
   hex_frame@proj4string <- sys_frame@proj4string
-  hex_frame@plotOrder <- sys_frame@plotOrder
-  hex_frame@polygons <- sys_frame@polygons
-  hex_frame@data[,c('r', 'c')] <- index_hex(hex_frame@polygons)
+  hex_frame@coords <- sys_frame@coords
+  hex_frame@data[,c('r', 'c')] <- transform_coords(hex_frame@coords)
   hex_frame@attributes <- sys_frame@attributes
   
   hex_frame
@@ -71,7 +70,7 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
 #' @param hex_polys A SpatialPolygonsDataFrame of a hexagon grid.
 #' @return A dataframe with two columns, r and c, that correspond to row and column indices
 #' of the hexagon grid.
-index_hex <- function(hex_polys) {
+index_hex_polys <- function(hex_polys) {
   top_points <- matrix(0, nrow=length(hex_polys), ncol=2)
   i <- 1
   for(polygon in hex_polys) {

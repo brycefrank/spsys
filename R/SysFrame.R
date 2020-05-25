@@ -1,4 +1,4 @@
-setClass('SysFrame', contains='SpatialPolygonsDataFrame',
+setClass('SysFrame', contains='SpatialPointsDataFrame',
          slots=list(attributes="character"))
 
 SysFrame <- function(splydf, attributes=character()) {
@@ -6,8 +6,7 @@ SysFrame <- function(splydf, attributes=character()) {
   sys_frame@data <- splydf@data
   sys_frame@bbox <- splydf@bbox
   sys_frame@proj4string <- splydf@proj4string
-  sys_frame@plotOrder <- splydf@plotOrder
-  sys_frame@polygons <- splydf@polygons
+  sys_frame@coords <- splydf@coords
   sys_frame@attributes <- attributes
   sys_frame
 }
