@@ -91,42 +91,40 @@ setMethod('neighborhood_matrix', signature(sys_frame='HexFrame'),
 setMethod('neighborhood_matrix', signature(sys_frame='RectFrame'), 
   function(sys_frame, order=1) {
     W <- Dist(sys_frame@data[,c('r', 'c')]) <= 2*order
+    diag(W) <- 0
+    return(W)
   }
 )
 
-#setGeneric('gearys_c', function(sys_frame, ...) {
-#  standardGeneric('gearys_c')
-#})
-#
-#setMethod('gearys_c', signature(sys_frame='HexFrame'),
-#  function(sys_frame) {
-#    n <- nrow(sys_frame@data)
-#    
-#    # TODO could pull this out and make separate methods for Hex/Rect frames
-#    # and then make a single method for gearys_c
-#    W <- Dist(sys_frame@data[,c('r', 'c')]) <= 2 # First order neighbors
-#    
-#    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
-#    p <- length(names(sys_frame[,sys_frame@attributes]))
-#    
-#    # TODO could be optimized somehow
-#    # since it is just a binary matrix we just need to sum the correct
-#    # components, perhaps by indexing or some other means.
-#    numerator <- rep(p, 0)
-#    for(i in 1:n) {
-#      for(j in 1:n) {
-#        e_ij <- att_df[i,] - att_df[j,]
-#        w_ij <- W[[i, j]]
-#        w_ij <- w_ij *e_ij^2 # Check this
-#        numerator <- numerator + w_ij
-#        print(w_ij)
-#      }
-#    }
-#    
-#    denominator <- 2 * sum(W) * colSums((att_df - colMeans(att_df))^2)
-#    C <- ((n-1) * numerator) / denominator
-#    return(C)
-#  }
-#)
+setGeneric('gearys_c', function(sys_frame, ...) {
+  standardGeneric('gearys_c')
+})
+
+setMethod('gearys_c', signature(sys_frame='HexFrame'),
+  function(sys_frame, order=1) {
+    n <- nrow(sys_frame@data)
+    W <- neighborhood_matrix(sys_frame, order=order)
+    
+    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    p <- length(names(sys_frame[,sys_frame@attributes]))
+    
+    # TODO could be optimized further
+    neighbor_inds <- which(W == 1, arr.ind=TRUE)
+    numerator <- 0
+    print(neighbor_inds)
+    for(k in 1:nrow(neighbor_inds)) {
+      i <- neighbor_inds[[k, 1]]
+      j <- neighbor_inds[[k, 2]]
+      
+      e_ij <- (sys_frame@data$z_1[[i]] - sys_frame@data$z_1[[j]])^2
+      numerator <- numerator + e_ij
+    }
+    
+    denominator <- 2 * sum(W) * sum(((sys_frame@data$z_1 - mean(sys_frame@data$z_1))^2))
+    C <- ((n-1) * numerator) / denominator
+    
+    return(C)
+  }
+)
 #
 #setGeneric('morans_i', function(sys_frame))
