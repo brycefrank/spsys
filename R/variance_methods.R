@@ -75,6 +75,7 @@ setGeneric('var_mat', function(sys_frame, ...) {
 # TODO make sure in documentation that we explain the assumption
 # that points provided to this function are ONLY those points that 
 # are inside Q (which is the study area in Matern's notatio)
+# TODO check appropriateness of FPC
 setMethod('var_mat', signature(sys_frame='HexFrame'),
   # TODO fix contrast defaults to something that makes sense
   function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(-1,-1,-1, 0, 1, 1, 1)) {
@@ -110,9 +111,65 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     
     Ti <- in_Q %>%
       group_by(r, c) %>%
-      summarize_at(.vars=c('z_1'), .funs='summ_df')
+      summarize_at(.vars=colnames(att_df), .funs='summ_df')
     
-    var <- (q * sum(Ti[,sys_frame@attributes])) / n^2
+    var <- (q * sum(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
+    names(var) <- colnames(sys_frame@attributes)
     return(var)
+  }
+)
+
+#' Calculate the variance using a denominator of n
+#' instead of n-1
+pop_var <- function(z) {
+  n <- length(z)
+  ssq <- sum((z - mean(z))^2)
+  ssq/n
+}
+
+
+# TODO give this a more descriptive name
+# TODO implement fpc in a better way upstream
+weight_var <- function(var, q_j, fpc, N_neighbs) {
+  (1/N_neighbs)^2 * (var / q_j) * fpc
+}
+
+setGeneric('var_non_overlap', function(sys_frame, ...) {
+  standardGeneric('var_non_overlap')
+})
+
+setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'), 
+  function(sys_frame, fpc=FALSE, N=NA_real_) {
+    neighborhoods <- get_hex_neighborhoods(sys_frame@data[,c('r','c')])
+    neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    n <- nrow(sys_frame@data)
+    
+    N_neighbs <- neighborhoods %>%
+      group_by(r, c) %>%
+      summarize(n=n()) %>%
+      nrow()
+    
+    # Prepare a vector specifying the pop variance function for each attribute
+    p <- length(colnames(att_df))
+    funs <- rep('pop_var', p)
+    names(funs) <- paste(colnames(att_df), 'var', sep='_')
+    
+    q <- neighborhoods %>%
+      na.omit() %>%
+      group_by(r, c) %>%
+      summarize(q_j=n())
+    
+    neighborhoods <- neighborhoods %>%
+      na.omit() %>%
+      group_by(r, c) %>%
+      summarize_at(.vars = colnames(att_df), .funs = funs) %>%
+      merge(q) %>%
+      mutate(N_j = q_j * sys_frame@a^2) %>%
+      mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
+      mutate_at(.vars = names(funs), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
+      summarize_at(.vars = names(funs), .funs=~sum(.))
+    
+    neighborhoods
   }
 )

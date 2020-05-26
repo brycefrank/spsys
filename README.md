@@ -60,29 +60,3 @@ for(i in 1:nrow(all_starts)) {
     var_srs(fpc=FALSE)
 }
 ```
-
-## Standardization Format
-
-This is a temporary idea for standard input for variance estimation using `sys` given a set of arbitrary (plot-level) attributes.
-
-```
-x    - x Coordinate
-y    - y Coordinate
-z_1  - First attribute
-...
-z_R  - Rth attribute
-pi_i - The first order inclusion probability
-```
-
-
-## Variance Estimators
-
-### Local Variance Estimators
-
-- Aune-Lundberg & Strand (2014)
-- Matern (1980)
-- Stevens and Olsen (2003)
-
-### Other
-
-- Dorazio (2003)

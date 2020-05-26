@@ -29,35 +29,10 @@ library(tidyr)
 #}
 #
 #
-##' Calculate the variance using a denominator of n
-##' instead of n-1
-#pop_var <- function(z) {
-#  n <- length(z)
-#  ssq <- sum((z - mean(z))^2)
-#  ssq/n
-#}
 #
 ##' Non-overlapping neighborhood variance
 ##' estimator for hexagonal nearest neighbors.
 #var_nnbh_hex <- function(samp, a) {
-# N <- nrow(samp)
-# neighborhoods <- get_hex_neighborhoods(samp[,c('c', 'r')], a)
-# neighborhoods <- merge(neighborhoods, samp, by.x=c('c_n', 'r_n'), by.y=c('c', 'r'), all.x=TRUE)
-# 
-# N_neighbs <- neighborhoods %>%
-#   group_by(r, c) %>%
-#   summarize(n=n())
-# N_neighbs <- nrow(N_neighbs)
-# 
-# neighborhoods <- neighborhoods %>%
-#   filter(!is.na(z_1)) %>%
-#   group_by(r, c) %>%
-#   summarize(pop_var = pop_var(z_1), q_j = n()) %>%
-#   mutate(N_j = q_j * a^2) %>%
-#   mutate(w_j_sq = (N_j / N)^2, fpc = ((N_j - q_j) / N_j)) %>%
-#   mutate(nbh_var = (1/N_neighbs)^2 *  (pop_var / q_j) * fpc) # TODO N_neighbs needs to be fixed
-# 
-# sum(neighborhoods$nbh_var)
 #}
 #
 ##' The Dorazio (2003) variance estimator.

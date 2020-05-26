@@ -3,7 +3,7 @@
 
 setClass('HexFrame', contains='SysFrame',
          slots = list(
-           a='integer'
+           a='numeric'
          ))
 
 # TODO not sure why this needs to be repeated from sysframe
@@ -62,6 +62,7 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   
   samp_ix   <- data.frame(r = r_samp, c = c_samp)
   samp <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
+  samp@a <- a
   return(samp)
 })
 
