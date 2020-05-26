@@ -21,12 +21,10 @@ translate_hex_ix <- function(hex_ix, a) {
 #' 
 #' @param hex_ix a dataframe with columns r and c corresponding to the row and column
 #' of the hexagonal indices
-#' @param a the sampling interval used to produce hex_ix
 #' @param grouping a vector of 7 elements assigning contrast coefficients to each neighborhood point
 #' @return a dataframe with columns r and c (the original sample positions) and
 #' columns r_n and c_n that are the coordinates of the neighbors.
 get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
-  #t_ix <-  translate_hex_ix(hex_ix, a)
   centers <- subsample_hex(hex_ix, c(1,1), 3)
   
   neighborhoods <- list()
@@ -51,15 +49,14 @@ get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
  neighborhoods <- bind_rows(neighborhoods)
  colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
  
- # "Untranslate" the neighborhoods
- # neighborhoods[,c('r', 'r_n')] <- a*(neighborhoods[,c('r', 'r_n')] - 1) + min(hex_ix[,'r'])
- # neighborhoods[,c('c', 'c_n')] <- a*(neighborhoods[,c('c', 'c_n')] - 1) + min(hex_ix[,'c'])
  return(neighborhoods)
 }
 
-gearys_C <- function(hex_ix, z, a) {
+
+
+gearys_C <- function(hex_ix, z) {
   N <- nrow(hex_ix)
-  W <- Dist(hex_ix) <= 2*a
+  W <- Dist(hex_ix) <= 2
   
   # TODO a bit of a slow solution here...
   # probably a way to do this with a matrix computation
@@ -78,3 +75,35 @@ gearys_C <- function(hex_ix, z, a) {
   C <- ((N-1) * numerator) / denominator
   return(C)
 }
+
+setGeneric('gearys_c', function(sys_frame, ...) {
+  standardGeneric('gearys_c')
+})
+
+setMethod('gearys_c', signature(sys_frame='HexFrame'),
+  function(sys_frame) {
+    n <- nrow(sys_frame@data)
+    W <- Dist(sys_frame@data[,c('r', 'c')]) <= 2 # First order neighbors
+    
+    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    p <- length(names(sys_frame[,sys_frame@attributes]))
+    
+    # TODO could be optimized somehow
+    # since it is just a binary matrix we just need to sum the correct
+    # components, perhaps by indexing or some other means.
+    numerator <- rep(p, 0)
+    for(i in 1:n) {
+      for(j in 1:n) {
+        e_ij <- att_df[i,] - att_df[j,]
+        w_ij <- W[[i, j]]
+        w_ij <- w_ij *e_ij^2 # Check this
+        numerator <- numerator + w_ij
+        print(w_ij)
+      }
+    }
+    
+    denominator <- 2 * sum(W) * colSums((att_df - colMeans(att_df))^2)
+    C <- ((n-1) * numerator) / denominator
+    return(C)
+  }
+)

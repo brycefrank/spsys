@@ -173,3 +173,14 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
     neighborhoods
   }
 )
+
+#setGeneric('var_dorazio_c', function(sys_frame, ...) {
+#  standardGeneric('var_dorazio_c')
+#})
+#
+#
+#setMethod('var_dorazio_c', signature(sys_frame = 'HexFrame'), 
+#  function() {
+#    
+#  }
+#)

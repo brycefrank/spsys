@@ -1,14 +1,21 @@
 <img src="docs/logo.png" width="60"></img><br> **sys** is an R package that allows users to explore systematic variance estimators.
 
-Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of these quantities has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `sys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. More specifically, `sys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson estimator.
+Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of estimates from systematic sampling designs has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `sys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. More specifically, `sys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson estimator in two-dimensional settings.
 
 `sys` supports both hexagonal and rectangular grids and has variance estimators implemented specifically for both configurations.
 
+## Installation
+
+Install this package directly from GitHub using `devtools`
+
+```{r}
+library(devtools)
+devtools::install_github('https://github.com/brycefrank/sys)
+```
+
 ## Getting Started
 
-`sys` operates on the `sp` package `SpatialPointsDataFrame` class. 
-
-The first step is to load in your `SpatialPointsDataFrame` that represents your systematic sample using the proper input function. The input function will standardize your dataset to a `SysFrame` class, upon which further analysis is conducted.
+`sys` operates on a modified version of the now ubiquitious `sp` package `SpatialPointsDataFrame` class. The entry point into `sys` are the `HexFrame` and `RectFrame` classes, which represent hexagonal systematic and rectangular systematic sampling configurations respectively.
 
 For example, we can load in a set of points from a hexagonal grid:
 
@@ -60,3 +67,7 @@ for(i in 1:nrow(all_starts)) {
     var_srs(fpc=FALSE)
 }
 ```
+
+## Development
+
+This package is currently in development. Interested collaborators can email the author at bryce.frank@oregonstate.edu

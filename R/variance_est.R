@@ -30,11 +30,6 @@ library(tidyr)
 #
 #
 #
-##' Non-overlapping neighborhood variance
-##' estimator for hexagonal nearest neighbors.
-#var_nnbh_hex <- function(samp, a) {
-#}
-#
 ##' The Dorazio (2003) variance estimator.
 #var_dorazio <- function(samp, z, a) {
 #  N <- length(z)
