@@ -154,6 +154,5 @@ setMethod('morans_i', signature(sys_frame='HexFrame'),
     morans_I <- (n / sum(W)) * (numerator / denominator)
     
     return(morans_I)
-    
   }
 )

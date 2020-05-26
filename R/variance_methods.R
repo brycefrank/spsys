@@ -174,13 +174,35 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
   }
 )
 
-#setGeneric('var_dorazio_c', function(sys_frame, ...) {
-#  standardGeneric('var_dorazio_c')
-#})
-#
-#
-#setMethod('var_dorazio_c', signature(sys_frame = 'HexFrame'), 
-#  function() {
-#    
-#  }
-#)
+setGeneric('var_dorazio_c', function(sys_frame, ...) {
+  standardGeneric('var_dorazio_c')
+})
+
+
+setMethod('var_dorazio_c', signature(sys_frame = 'HexFrame'), 
+  function(sys_frame, fpc=FALSE, N=NA_real_, order=1) {
+    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
+    C <- gearys_c(sys_frame, order=order)
+    return(v_srs * C)
+  }
+)
+
+setGeneric('var_dorazio_i', function(sys_frame, ...) {
+  standardGeneric('var_dorazio_i')
+})
+
+
+setMethod('var_dorazio_i', signature(sys_frame = 'HexFrame'), 
+  function(sys_frame, fpc=FALSE, N=NA_real_, order=1) {
+    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
+    morans_I <- morans_i(sys_frame, order=order)
+    
+    if(morans_I > 0) {
+      w <- 1 + 2/log(morans_I) + 2/(1/morans_I - 1)
+    } else {
+      w <- 1
+    }
+    
+    return(v_srs * w)
+  }
+)
