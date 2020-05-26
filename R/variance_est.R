@@ -4,24 +4,6 @@ library(ggplot2)
 library(FNN)
 library(tidyr)
 
-#' Estimates the sampling variance of the mean under SRSWoR
-#var_srs <- function(z, N) {
-#  n <- length(z)
-#  fpc <- 1 - n/N
-#  var_mu <- (n - 1)^(-1) * n^(-1) *  sum((z - mean(samp$z))^2)
-#  return(var_mu * fpc)
-#}
-#
-##' Estimates the sampling variance of the mean using 
-##' the Stevens and Olsen (2003) estimator.
-#var_so <- function(z, coords, pi_i, N) {
-#  wt <- localmean.weight(coords[,1], coords[,2], pi_i)
-#  var_total <- localmean.var(z/pi_i, wt)
-#  n <- nrow(samp)
-#  fpc <- 1 - n/N
-#  return((1/N^2) * (1-(n/N))  * var_total) 
-#}
-#
 ##' Estimates the sampling variance of the mean using
 ##' finite population block kriging
 #var_fpbk <- function(samp, N) {
@@ -46,36 +28,6 @@ library(tidyr)
 #  return(var_total * fpc * 1/N^2)
 #}
 #
-#
-##' Matern's variance estimator modified for hexagonal grids
-#var_mat_hex <- function(hex_ix, a, attributes) {
-# ne
-#  
-# # A dataframe such that each neighbor point is paired with its center
-# neighborhoods <- merge(neighborhoods, samp, by.x=c('r_n', 'c_n'), by.y=c('r_t', 'c_t'), all.x=TRUE)
-# 
-# # Get the number of neighborhoods with at least one point in Q
-# in_Q <- neighborhoods %>%
-#   mutate(z_ct = z_1 - z_bar) %>%
-#   replace_na(list(z_ct=0))
-# 
-# # What is the size of each group?
-# n_groups <- neighborhoods %>%
-#   filter(is.na(r)) %>%
-#   group_by(r_t, c_t) %>%
-#   summarize(n = n())
-#  
-# q <- 9
-# n <- nrow(samp)
-# 
-# Ti <- in_Q %>%
-#   group_by(r_t, c_t) %>%
-#   summarize(test = sum(grp * z_ct)^2 / 4)
-# 
-# var <- (q * sum(Ti$test)) / n^2
-# 
-# return(var)
-#}
 #
 ##' Calculate the variance using a denominator of n
 ##' instead of n-1

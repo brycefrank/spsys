@@ -38,8 +38,8 @@ get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
     neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
     neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
     
-    if(!is.na(contrasts)) {
-      cbind(neighborhood, contrasts)
+    if(length(contrasts) == 7) {
+      neighborhood <- cbind(neighborhood, contrasts)
     }
     
     neighborhood <- data.frame(neighborhood)

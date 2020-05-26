@@ -28,7 +28,7 @@ Given a `HexFrame` or `RectFrame` that represents a sample of the study area, it
 
 ```
 N <- 10000
-var_srs(hex_frame, N=N)
+var_srs(hex_frame, N=N, fpc=TRUE)
 ```
 
 Please see the vignette for formal descriptions of the variance estimators, their required arguments and other relavent details.
@@ -50,7 +50,7 @@ where `c(1,1)` is the starting position in index space and `a=3` is the sampling
 hex_frame %>% subsample(c(1,1), a)
 ```
 
-Of course we will be interested in all possible subsamples. Here we iterate over all possible subsamples and compute the simple random sampling with replacement estimator
+In most assessments we will be interested in all possible subsamples. Here we iterate over all possible subsamples and compute the simple random sampling with replacement estimator
 
 ```{r}
 all_starts <- subsample_starts(a)
@@ -59,7 +59,6 @@ for(i in 1:nrow(all_starts)) {
   subsample(hex_frame, all_starts[i,]) %>%
     var_srs(fpc=FALSE)
 }
-
 ```
 
 ## Standardization Format

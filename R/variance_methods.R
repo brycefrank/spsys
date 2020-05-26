@@ -72,12 +72,47 @@ setGeneric('var_mat', function(sys_frame, ...) {
   standardGeneric('var_mat')
 })
 
+# TODO make sure in documentation that we explain the assumption
+# that points provided to this function are ONLY those points that 
+# are inside Q (which is the study area in Matern's notatio)
 setMethod('var_mat', signature(sys_frame='HexFrame'),
   # TODO fix contrast defaults to something that makes sense
-  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(-1,-1,-1, 1, 1, 1)) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(-1,-1,-1, 0, 1, 1, 1)) {
     neighborhoods <- get_hex_neighborhoods(sys_frame@data[,c('r','c')], contrasts=contrasts)
-    neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
-    # TODO finish this
+    # Mean-center the attributes
+    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
+    d_ct <- cbind(sys_frame@data[,c('r', 'c')], att_ct)
+    neighborhoods <- merge(neighborhoods, d_ct, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    
+    # Get the number of neighborhoods with at least one point in Q
+    p <- length(colnames(att_df))
+    
+    # Set the NA values of neighborhood attributes to zero
+    # this implies that they are outside of the study area
+    zero_list <- as.list(rep(0,p))
+    names(zero_list) <- colnames(att_df)
+    in_Q <- neighborhoods %>%
+      replace_na(zero_list)
+    
+    # What is the size of each group?
+    # TODO how to handle semi-complete cases? e.g. att1=30 and att2=NA, etc? Maybe force the issue
+    # when SysFrame is created
+    n_groups <- neighborhoods %>%
+      na.omit() %>%
+      group_by(r, c) %>%
+      summarize(n = n())
+    
+    q <- 9
+    n <- nrow(sys_frame@data)
+    summ_df <- function(x) {return(sum(x * in_Q$contrasts)^2  / 4)}
+    
+    Ti <- in_Q %>%
+      group_by(r, c) %>%
+      summarize_at(.vars=c('z_1'), .funs='summ_df')
+    
+    var <- (q * sum(Ti[,sys_frame@attributes])) / n^2
+    return(var)
   }
 )
