@@ -160,6 +160,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
       group_by(r, c) %>%
       summarize(q_j=n())
     
+    # TODO some neighborhoods return a 0 variance
     neighborhoods <- neighborhoods %>%
       na.omit() %>%
       group_by(r, c) %>%
