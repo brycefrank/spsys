@@ -27,7 +27,7 @@ translate_hex_ix <- function(hex_ix, a) {
 get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
   # We need the top left index to subsample from
   left <- min(hex_ix$c)
-  top <- min(hex_ix$r[hex_ix$c==left])
+  top  <- min(hex_ix$r[hex_ix$c==left])
   
   centers <- subsample_hex(hex_ix, c(top, left), 3)
   
@@ -57,30 +57,6 @@ get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
 }
 
 
-
-gearys_C <- function(hex_ix, z) {
-  N <- nrow(hex_ix)
-  W <- Dist(hex_ix) <= 2
-  
-  # TODO a bit of a slow solution here...
-  # probably a way to do this with a matrix computation
-  # e.g. outer(z, z, "-")
-  numerator <- 0 
-  for(i in 1:N) {
-    for(j in 1:N) {
-      e_ij <- z[[i]] - z[[j]]
-      w_ij <- W[[i, j]]
-      w_ij * e_ij^2
-      numerator <- numerator + w_ij
-    }
-  }
-  
-  denominator <- 2 * sum(W) * sum((z - mean(z))^2)
-  C <- ((N-1) * numerator) / denominator
-  return(C)
-}
-
-
 setGeneric('neighborhood_matrix', function(sys_frame, ...) {
   standardGeneric('neighborhood_matrix')
 })
@@ -88,15 +64,14 @@ setGeneric('neighborhood_matrix', function(sys_frame, ...) {
 setMethod('neighborhood_matrix', signature(sys_frame='HexFrame'), 
   function(sys_frame, order=1) {
     W <- Dist(sys_frame@data[,c('r', 'c')]) <= 2*order
+    diag(W) <- 0
+    return(W)
   }
 )
 
 # FIXME do this for rectangular frames
 setMethod('neighborhood_matrix', signature(sys_frame='RectFrame'), 
   function(sys_frame, order=1) {
-    W <- Dist(sys_frame@data[,c('r', 'c')]) <= 2*order
-    diag(W) <- 0
-    return(W)
   }
 )
 

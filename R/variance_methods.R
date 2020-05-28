@@ -180,6 +180,7 @@ setMethod('var_dorazio_c', signature(sys_frame = 'HexFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_, order=1) {
     v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
     C <- gearys_c(sys_frame, order=order)
+    print(paste('C:', C))
     return(v_srs * C)
   }
 )
@@ -199,7 +200,7 @@ setMethod('var_dorazio_i', signature(sys_frame = 'HexFrame'),
     } else {
       w <- 1
     }
-    
+    print(paste('W:', w))
     return(v_srs * w)
   }
 )

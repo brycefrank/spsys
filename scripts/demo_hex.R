@@ -15,8 +15,4 @@ estimators <- list(
 a_vec   <- c(4:10)
 results <- compare_estimators(hex_frame, a_vec, estimators)
 
-ggplot(results) +
-  geom_jitter(aes(x=as.numeric(a), variance, color=estimator)) +
-  geom_line(aes(x=as.numeric(a),  variance), data=filter(results, estimator=='var_sys'))
-  ylab("")
 
