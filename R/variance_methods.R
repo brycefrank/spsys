@@ -1,5 +1,6 @@
 # Variance estimators in method form
 library(spsurvey)
+library(tidyr)
 
 setGeneric('var_srs', function(sys_frame, ...) {
   standardGeneric('var_srs')
@@ -72,13 +73,14 @@ setGeneric('var_mat', function(sys_frame, ...) {
   standardGeneric('var_mat')
 })
 
+
 # TODO make sure in documentation that we explain the assumption
 # that points provided to this function are ONLY those points that 
 # are inside Q (which is the study area in Matern's notatio)
 # TODO check appropriateness of FPC
 setMethod('var_mat', signature(sys_frame='HexFrame'),
   # TODO fix contrast defaults to something that makes sense
-  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(-1,-1,-1, 0, 1, 1, 1)) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(1,-1, 0, 0, 0, 1, -1)) {
     neighborhoods <- get_hex_neighborhoods(sys_frame@data[,c('r','c')], contrasts=contrasts)
     
     # Mean-center the attributes
@@ -90,31 +92,25 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     # Get the number of neighborhoods with at least one point in Q
     p <- length(colnames(att_df))
     
-    # Set the NA values of neighborhood attributes to zero
-    # this implies that they are outside of the study area
+    # Set the NA values of neighborhood attributes (i.e. they are out of the area) 
+    # to zero if they are
     zero_list <- as.list(rep(0,p))
     names(zero_list) <- colnames(att_df)
     in_Q <- neighborhoods %>%
       replace_na(zero_list)
     
-    # What is the size of each group?
-    # TODO how to handle semi-complete cases? e.g. att1=30 and att2=NA, etc? Maybe force the issue
-    # when SysFrame is created
-    n_groups <- neighborhoods %>%
-      na.omit() %>%
-      group_by(r, c) %>%
-      summarize(n = n())
-    
     q <- 9
     n <- nrow(sys_frame@data)
+    
+    # A function that generates the T value for each neighborhood
     summ_df <- function(x) {return(sum(x * in_Q$contrasts)^2  / 4)}
     
     Ti <- in_Q %>%
       group_by(r, c) %>%
-      summarize_at(.vars=colnames(att_df), .funs='summ_df')
+      mutate_at(.vars=colnames(att_df), .funs=function(x){return(x*contrasts)}) %>%
+      summarize_at(.vars=colnames(att_df), .funs=function(x){return(sum(x)^2/4)})
     
     var <- (q * sum(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
-    names(var) <- colnames(sys_frame@attributes)
     return(var)
   }
 )

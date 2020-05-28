@@ -25,7 +25,11 @@ translate_hex_ix <- function(hex_ix, a) {
 #' @return a dataframe with columns r and c (the original sample positions) and
 #' columns r_n and c_n that are the coordinates of the neighbors.
 get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
-  centers <- subsample_hex(hex_ix, c(1,1), 3)
+  # We need the top left index to subsample from
+  left <- min(hex_ix$c)
+  top <- min(hex_ix$r[hex_ix$c==left])
+  
+  centers <- subsample_hex(hex_ix, c(top, left), 3)
   
   neighborhoods <- list()
   for(i in 1:nrow(centers)) {
