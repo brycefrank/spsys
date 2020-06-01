@@ -1,104 +1,92 @@
-# A script to index arbitrarily "warped" sets of hexagon points
-# this arose because the hexagonal tesselation used by the FIA
-# is warped over geographic space, which can break "naive"
-# indexing operations that use linear transformations.
-
-# The general approach is to recursively map neighboring hexagons
-# to the index set, which allows for some "shifting" between points
-# without breaking across large distances.
-
-# The requirements are that: 1) the hexagons are all approximately the same
-# size (i.e. the hexagon points are approximately evenly spaced) and 
-# 2) that every hexagon that needs to be indexed has at least one neighbor
-# (i.e. there are no "holes"). The standard FIA hexagon system meets these
-# requirements.
 library(rgdal)
 library(rgeos)
 
-# Some formalisms. Anything ending in _c is a set of coordinates of hexagonal centroids
-# anything ending in _ix is the desired 2dimensional index
-# anything ending in _rix is the 'raw' one dimensional index of the original list of hexagons
-
-block_hex <- readRDS('data/block_hex.RDS')
-
-# Step 0 - Build touching index and centroids
-touche_rix <- gTouches(block_hex, byid=TRUE, returnDense=FALSE)
-centroids <- gCentroid(block_hex, byid=TRUE)
-
-
-# Step 1 - Select the first hexagon that has 6 neighbors
-start_rix <- which(lengths(touche_rix) == 6)[[1]]
-start_c  <- centroids@coords[start_rix,]
-
-# Step 2  - Determine the transformation angle. This will be used to rotate the set of hexagon centroids to a standard orientation
-# Step 2a - Consider only those neighbors whose x coordinates are leq the starting x
-
-# Step 2b - Of these coordinates, consider the one with the maximum y
-
-# Step 2c - compute the angle between "north" and this point
-dx <- top_c[[1]] - start_c[[1]]
-dy <- top_c[[2]] - start_c[[2]]
-theta_radians <- atan2(dy, dx) - (pi/2)
-
-# Step 3 - Make a matrix to store the hexagonal indices, set the starting hexagon to 0,0
-hex_ix <- matrix(NA, nrow=nrow(centroids@coords), ncol=2)
-hex_ix[start_rix,] <- c(0,0)
-
-# Step 4 - The Big One - Recursively Index the neighbors
-recurse <- function(centroids, touche_ix, hex_ix, this_hex_rix, this_hex_ix) {
-  print(this_hex_ix)
-  # Find the neighbors of start_ix
-  nbh_c <- centroids@coords[touche_ix[[this_hex_rix]],]
-  print(nbh_c)
-  this_c <- centroids@coords[this_hex_rix, , drop=FALSE]
+#' A function to index arbitrarily "warped" sets of hexagon points
+#' this arose because the hexagonal tesselation used by the FIA
+#' is warped over geographic space, which can break "naive"
+#' indexing operations that use linear transformations.
+#' 
+#' The general approach is to iteratively map neighboring hexagons
+#' to the index set, which allows for some "shifting" between points
+#' without breaking across large distances.
+#' 
+#' The requirements are that: 1) the hexagons are all approximately the same
+#' size (i.e. the hexagon points are approximately evenly spaced) and 
+#' 2) that every hexagon that needs to be indexed has at least one neighbor
+#' (i.e. there are no "holes"). The standard FIA hexagon system meets these
+#' requirements and 3) the hexagons are all roughly oriented in the same direction.
+#' 
+#' (3) may not immediately be the case, but some projections may alleviate extreme
+#' rotations.
+neighbor_indexing <- function(tesselation) {
+  # Step 0 - Build touching index and centroids
+  centroids  <- gCentroid(tesselation, byid=TRUE)
+  centroid_c     <- data.frame(tesselation@coords)
+  centroid_c$rix <- centroid_c$rix <- as.numeric(row.names(centroid_c))
+  touche_rix <- gTouches(tesselation, byid=TRUE, returnDense=FALSE)
   
-  # Get neighbors to left of this point, order descending by y
-  left_c   <- nbh_c[(nbh_c[,1] <= this_c[1]), ,drop=FALSE]
-  left_c   <- left_c[order(left_c[,2], decreasing=TRUE),]
+  # Step 1 - Select the first hexagon that has 6 neighbors
+  start_rix <- which(lengths(touche_rix) == 6)[[1]]
+  start_c   <- centroids@coords[start_rix,]
   
-  # The first element is the "north" coordinate
-  n_c   <- left_c[1, ,drop=FALSE]
-  n_rix <- as.numeric(row.names(n_c))
-  n_ix  <- c(this_hex_ix[[1]] - 2, this_hex_ix[[2]])
-  hex_ix[n_rix, ] <- n_ix
+  # Step 2  - Build a key that assigns angles to North/South/Northwest indices etc
+  nbh_c  <- centroids@coords[touche_rix[[start_rix]],]
+  dx <- nbh_c[,1] - start_c[[1]]
+  dy <- nbh_c[,2] - start_c[[2]]
   
-  # The second element is the "northwest" coordinate
-  nw_c  <- left_c[2, ,drop=FALSE]
-  nw_rix <- as.numeric(row.names(nw_c))
-  nw_ix <- c(this_hex_ix[[1]] - 1, this_hex_ix[[2]] - 1)
-  hex_ix[nw_rix, ] <- nw_ix
+  # TODO used twice make a function
+  theta <- atan2(dy, dx) * (180 / pi)
+  theta[theta < 0] <- round(theta[theta < 0] + 360)
   
-  # The third element is the "southwest" coordinate
-  sw_c  <- left_c[3, ,drop=FALSE]
-  sw_rix <- as.numeric(row.names(nw_c))
-  sw_ix <- c(this_hex_ix[[1]] + 1, this_hex_ix[[2]] - 1)
-  hex_ix[sw_rix, ] <- sw_ix
+  theta_key <- data.frame(theta)
+  theta_key <- theta_key[order(theta), ,drop=FALSE]
+  theta_key$r <- c(0, -1, -1,  0,  1, 1)
+  theta_key$c <- c(2,  1,  1, -2, -1, 1)
   
-  # Get neighbors to right of this point, order descending by y
-  right_c   <- nbh_c[(nbh_c[,1] > this_c[1]), ,drop=FALSE]
-  right_c   <- right_c[order(right_c[,2], decreasing=TRUE),]
+  # While loop instead
+  # IT WORKS IT WORKS IT WORKS!!!!
+  to_visit <- c()
+  visited  <- data.frame(matrix(NA, nrow=nrow(centroid_c), ncol=3))
+  colnames(visited) <- c('rix', 'r', 'c')
   
-  # The first element is the "northeast" coordinate
-  ne_c   <- right_c[1, ,drop=FALSE]
-  ne_rix <- as.numeric(row.names(ne_c))
-  ne_ix  <- c(this_hex_ix[[1]] - 1, this_hex_ix[[2]] + 1)
-  hex_ix[ne_rix, ] <- ne_ix
+  this_hex_rix <- start_rix
+  n_visited <- 0
   
-  # The second element is the "southeast" coordinate
-  se_c  <- right_c[2, ,drop=FALSE]
-  se_rix <- as.numeric(row.names(se_c))
-  se_ix <- c(this_hex_ix[[1]] + 1, this_hex_ix[[2]] + 1)
-  hex_ix[se_rix, ] <- se_ix
-  
-  # The third element is the "south" coordinate
-  s_c  <- left_c[3, ,drop=FALSE]
-  s_rix <- as.numeric(row.names(nw_c))
-  s_ix <- c(this_hex_ix[[1]] + 2, this_hex_ix[[2]])
-  hex_ix[s_rix, ] <- s_ix
-  
-  print(hex_ix)
-  recurse(centroids, touche_ix, hex_ix, n_rix, n_ix)
-  
+  while(n_visited < nrow(centroid_c)-1) {
+    if(this_hex_rix == 125) {
+      print('stop')
+    }
+    
+    n_visited <- sum(!is.na(visited$rix))
+    to_visit <- to_visit[2:length(to_visit)]
+    nbh_c  <- centroid_c[touche_ix[[this_hex_rix]],]
+    this_c <- centroid_c[this_hex_rix, , drop=FALSE]
+    
+    # Compute the angles of this neighborhood
+    theta <- atan2(nbh_c[,2] - this_c[[2]], nbh_c[,1] - this_c[[1]]) * (180 / pi)
+    theta[theta < 0] <- round(theta[theta < 0] + 360)
+    nbh_c <- cbind(nbh_c, theta)
+    
+    nbh_v <- merge(nbh_c, visited, by='rix')
+    visited[this_c$rix, 1] <- this_hex_rix
+    
+    if(nrow(nbh_v) == 0) {
+      # This is the first point
+      visited[this_c$rix, c('r', 'c')] <- c(0, 0)
+    } else {
+      # Get the first non-NA neighbor
+      non_na <- nbh_v[complete.cases(nbh_v[,c('r', 'c')]),]
+      non_na <- non_na[1, ,drop=FALSE]
+      
+      # Now attach the theta key
+      non_na <- merge(non_na, theta_key, by='theta', all.x=TRUE)
+      visited[this_c$rix, c('r', 'c')] <- c(non_na$r.x - non_na$r.y, non_na$c.x - non_na$c.y)
+    }
+    
+    # Prepare the next step, what indices do we need to visit?
+    to_visit <- c(to_visit, nbh_c$rix[!(nbh_c$rix %in% to_visit | nbh_c$rix %in% visited[,1])])
+    this_hex_rix <- to_visit[[1]]
+  }
+    
+  return(visited)
 }
-
-recurse(centroids, touche_rix, hex_ix, start_rix, c(0,0))
