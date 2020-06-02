@@ -29,6 +29,47 @@ get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
   left <- min(hex_ix$c)
   top  <- min(hex_ix$r[hex_ix$c==left])
   
+  # TODO replace hex_ix with hex_sys since we are using a 
+  # deprecated function here
+  centers <- subsample_hex(hex_ix, c(top, left), 3)
+  
+  neighborhoods <- list()
+  for(i in 1:nrow(centers)) {
+    row <- centers[i, 1]
+    col <- centers[i, 2]
+    neighborhood <- matrix(NA, nrow=7, ncol=2)
+    
+    neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
+    neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
+    
+    if(length(contrasts) == 7) {
+      neighborhood <- cbind(neighborhood, contrasts)
+    }
+    
+    neighborhood <- data.frame(neighborhood)
+    neighborhood$r <- row
+    neighborhood$c <- col
+    neighborhoods[[i]] <- neighborhood
+  }
+  
+ neighborhoods <- bind_rows(neighborhoods)
+ colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
+ 
+ return(neighborhoods)
+}
+
+#' Gets the rectangular neighborhoods
+#' 
+#' @param hex_ix a dataframe with columns r and c corresponding to the row and column
+#' of the hexagonal indices
+#' @param grouping a vector of 7 elements assigning contrast coefficients to each neighborhood point
+#' @return a dataframe with columns r and c (the original sample positions) and
+#' columns r_n and c_n that are the coordinates of the neighbors.
+get_rect_neighborhoods <- function(rect_ix, contrasts=NA) {
+  # We need the top left index to subsample from
+  left <- min(rect_ix$c)
+  top  <- min(rect_ix$r[rect_ix$c==left])
+  
   centers <- subsample_hex(hex_ix, c(top, left), 3)
   
   neighborhoods <- list()

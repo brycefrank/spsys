@@ -29,6 +29,15 @@ HexFrame <- function(splydf, attributes=character(), index=NA) {
   hex_frame
 }
 
+#' Subsamples a dataframe of hexagonal indices produced by the `index_hex` function.
+#' For some specified starting index and sampling interval, subsamples a hexagonal index 
+#' set such that the spatial structure is preserved, i.e. subsamples also retain a
+#' hexagonal structure.
+#' 
+#' @param hex_ix A dataframe of hex indices from the `index_hex` function.
+#' @param start_pos the starting position
+#' @param a The order of the subset: 2 represents sampling every other
+#' @return A dataframe of row and column indices that have been sampled.
 setGeneric('subsample', function(object, start_pos, a){
   standardGeneric('subsample')
 })

@@ -54,47 +54,6 @@ transform_coords <- function(coords) {
   
 }
 
-
-#' Subsamples a dataframe of hexagonal indices produced by the `index_hex` function.
-#' For some specified starting index and sampling interval, subsamples a hexagonal index 
-#' set such that the spatial structure is preserved, i.e. subsamples also retain a
-#' hexagonal structure.
-#' 
-#' @param hex_ix A dataframe of hex indices from the `index_hex` function.
-#' @param start_pos the starting position
-#' @param a The order of the subset: 2 represents sampling every other
-#' @return A dataframe of row and column indices that have been sampled.
-subsample_hex <- function(hex_ix, start_pos, a) {
-  max_row <- max(hex_ix$r[!is.na(hex_ix$r)])
-  max_col <- max(hex_ix$c[!is.na(hex_ix$c)])
-  
-  r_start <- start_pos[[1]]
-  c_start <- start_pos[[2]]
-  
-  r_seq <- seq(r_start, max_row, a)
-  r_samp <- c()
-  c_samp <- c()
-  
-  j <- 1
-  for(r in r_seq) {
-    if (j %% 2 == 0) {
-      add <- seq(c_start-a, max_col, a*2)
-    } else {
-      add <- seq(c_start-2*a, max_col, a*2)
-    }
-    
-    add <- add[add>0]
-    c_samp <- c(c_samp, add)
-    r_samp <- c(r_samp, rep(r, length(add)))
-    
-    
-    j <- j + 1
-  }
-  
-  samp_ix   <- data.frame(r = r_samp, c = c_samp)
-  return(samp_ix)
-}
-
 #' Creates a dataframe of hexagon indices for use in `subsample_sq`.
 #' 
 #' @param square_polys A SpatialPolygonsDataFrame of a square grid.
