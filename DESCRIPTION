@@ -1,10 +1,10 @@
-Package: sys
+Package: spsys
 Title: Systematic Variance Estimation
 Version: 0.1
 Authors@R: person("Bryce", "Frank", email = "bfrank70@gmail.com",
                   role = c("aut", "cre"))
 Author: Bryce Frank [aut]
-Description: Implement and compare systematic variances that consider unequal probability selections.
+Description: Implement and compare variance estimators for systematic sampling designs.
 Depends: R (>= 3.1.0)
 License: MIT
 LazyData: true

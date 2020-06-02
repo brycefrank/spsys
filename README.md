@@ -1,8 +1,8 @@
-<img src="docs/logo.png" width="60"></img><br> **sys** is an R package that allows users to explore systematic variance estimators.
+<img src="docs/logo.png" width="60"></img><br> **spsys** is an R package that allows users to explore systematic variance estimators.
 
-Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of estimates from systematic sampling designs has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `sys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. More specifically, `sys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson estimator in two-dimensional settings.
+Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of estimates from systematic sampling designs has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `spsys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. More specifically, `spsys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson estimator in two-dimensional settings.
 
-`sys` supports both hexagonal and rectangular grids and has variance estimators implemented specifically for both configurations.
+`spsys` derives its classes from the popular `sp` package, thus all `sp`-related functions such as `sp::plot`, `rgdal::writeOGR`, etc. work easily.
 
 ## Installation
 
@@ -15,7 +15,7 @@ devtools::install_github('https://github.com/brycefrank/sys)
 
 ## Getting Started
 
-`sys` operates on a modified version of the now ubiquitious `sp` package `SpatialPointsDataFrame` class. The entry point into `sys` are the `HexFrame` and `RectFrame` classes, which represent hexagonal systematic and rectangular systematic sampling configurations respectively.
+`spsys` operates on a modified version of the now ubiquitious `sp` package `SpatialPointsDataFrame` class. The entry point into `sys` are the `HexFrame` and `RectFrame` classes, which represent hexagonal systematic and rectangular systematic sampling configurations respectively.
 
 For example, we can load in a set of points from a hexagonal grid:
 
@@ -25,9 +25,7 @@ hex_points <- readOGR('my_hex_points.shp')
 hex_frame <- HexFrame(hex_points, c('vol', 'ba'))
 ```
 
-`HexFrame` takes two arguments: a `SpatialPointsDataFrame` and a vector of column names that indicate attributes we are interested in conducting the analyses on. Here we indicate volume (vol) and basal area (ba) as our attributes of interest. `HexFrame`, and its sister class `RectFrame` (for rectangular systematic samples), achieve several things. First, the points are cast onto a set of polygons representing the tesselation of the study area. Second, they implement a standardized indexing system that is used in several variance estimation functions. Finally, they provide a standardized interface for different types of analysis functions.
-
-The `hex_frame` variable now represents an object of the `HexFrame` class.
+`HexFrame` takes two arguments: a `SpatialPointsDataFrame` and a vector of column names that indicate attributes we are interested in conducting the analyses on. Here we indicate volume (vol) and basal area (ba) as our attributes of interest. `HexFrame`, and its sister class `RectFrame` (for rectangular systematic samples), implement a standard interface upon which variance estimators can be constructed.
 
 ### Estimating Variances
 
