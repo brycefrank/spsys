@@ -14,5 +14,3 @@ estimators <- list(
 
 a_vec   <- c(4:10)
 results <- compare_estimators(hex_frame, a_vec, estimators)
-
-

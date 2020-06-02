@@ -9,7 +9,7 @@ setClass('HexFrame', contains='SysFrame',
 # TODO not sure why this needs to be repeated from sysframe
 # is it possible to do something like callNextMethod but for
 # instantiation?
-HexFrame <- function(splydf, attributes=character()) {
+HexFrame <- function(splydf, attributes=character(), index=NA) {
   sys_frame <- SysFrame(splydf, attributes)
   
   hex_frame <- new('HexFrame')
@@ -17,8 +17,14 @@ HexFrame <- function(splydf, attributes=character()) {
   hex_frame@bbox <- sys_frame@bbox
   hex_frame@proj4string <- sys_frame@proj4string
   hex_frame@coords <- sys_frame@coords
-  hex_frame@data[,c('r', 'c')] <- transform_coords(hex_frame@coords)
   hex_frame@attributes <- sys_frame@attributes
+  
+  # TODO make this condition a bit cleaner
+  if(length(index) > 1) {
+    hex_frame@data[,c('r', 'c')] <- index
+  } else {
+    hex_frame@data[,c('r', 'c')] <- transform_coords(hex_frame@coords)
+  }
   
   hex_frame
 }
