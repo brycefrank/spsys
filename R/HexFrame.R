@@ -74,7 +74,10 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
     
     j <- j + 1
   }
-  
+ 
+  # I am wondering if this is correct? 
+  # There was a problem with RectFrame where it was returning
+  # the same sample...do these need to be standardized?
   samp_ix   <- data.frame(r = r_samp, c = c_samp)
   samp <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
   samp@a <- a

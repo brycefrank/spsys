@@ -66,6 +66,20 @@ for(i in 1:nrow(all_starts)) {
 }
 ```
 
+## Implemented Estimators
+
+For both hexagonal and rectangular systematic samples, the following estimators are implemented.
+
+```
+Matern  (1980)*  - var_mat
+Dorazio (2003) - var_dorazio_i, var_dorazio_c
+Stevens & Olsen (2003) - var_so
+Non-Overlapping Neighborhoods - var_non_overlap
+Simple Random Sampling - var_srs
+```
+
+The hexagonal implementation for the Matern (1980) estimator is not a strict implementation of the Matern estimator. See the vignette for further details.
+
 ## Development
 
 This package is currently in development. Interested collaborators can email the author at bryce.frank@oregonstate.edu

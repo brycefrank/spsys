@@ -1,26 +1,41 @@
 library(sp)
 library(rgeos)
 
-
 #' For a given sampling interval, return the set of all possible starting positions
 #' 
 #' @param a The sampling interval
 #' @return  A dataframe of starting positions for all possible systematic samples 
 #' for the interval a.
-subsample_starts <- function(a) {
-  r_starts <- c()
-  c_starts <- c()
-  
-  for(r in 1:a) {
-   if(r %% 2 == 0)  {
-     c_starts <- c(c_starts, seq(1, 2*a, 2) + 1)
-   } else {
-     c_starts <- c(c_starts, seq(1, 2*a, 2))
-   }
-     r_starts <- c(r_starts, rep(r, a))
-  }
-  return(data.frame(r=r_starts, c=c_starts))
-}
+setGeneric('subsample_starts', function(sys_frame, a) {
+  standardGeneric('subsample_starts')
+})
+
+setMethod('subsample_starts', signature = list(sys_frame='RectFrame', a='numeric'), 
+  function(sys_frame, a) {
+    r_starts <- seq(1, a)
+    c_starts <- seq(1, a)
+    
+    starts <- expand.grid(r_starts, c_starts)
+    starts <- data.frame(r = starts[,1], c = starts[,2])
+    return(starts)
+})
+
+setMethod('subsample_starts', signature = list(sys_frame='HexFrame', a='numeric'), 
+  function(sys_frame, a) {
+    r_starts <- c()
+    c_starts <- c()
+    
+    for(r in 1:a) {
+     if(r %% 2 == 0)  {
+       c_starts <- c(c_starts, seq(1, 2*a, 2) + 1)
+     } else {
+       c_starts <- c(c_starts, seq(1, 2*a, 2))
+     }
+       r_starts <- c(r_starts, rep(r, a))
+    }
+    return(data.frame(r=r_starts, c=c_starts))
+})
+
 
 #' Transforms a set of population unit coordinates to an integer index. Used in the
 #' `index_hex` and `index_sq` functions.
@@ -74,29 +89,4 @@ index_sq <- function(square_polys) {
   sq_ix <- transform_coords(top_points)
   return(sq_ix)
   
-}
-
-#' Subsamples a dataframe of square indices produced by the `index_sq` function.
-#' For some specified starting index and sampling interval, subsamples a square index 
-#' set such that the spatial structure is preserved, i.e. subsamples also retain a
-#' square structure.
-#' 
-#' @param sq_ix A dataframe of square indices from the `index_sq` function.
-#' @param start_pos the starting position
-#' @param a The order of the subset: 2 represents sampling every other
-#' @return A dataframe of row and column indices that have been sampled.
-subsample_sq <- function(sq_ix, start_pos, a) {
-  max_row <- max(sq_ix$r)
-  max_col <- max(sq_ix$c)
-  
-  r_start <- start_pos[[1]]
-  c_start <- start_pos[[2]]
-  
-  r_seq <- seq(r_start, max_row, a)
-  c_seq <- seq(c_start, max_col, a)
-  
-  a_grid <- expand.grid(r_seq, c_seq)
-  colnames(a_grid) <- c('r', 'c')
-  a_grid <- a_grid[a_grid$r <= max_row || a_grid$c <= max_col,]
-  return(a_grid)
 }

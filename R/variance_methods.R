@@ -170,9 +170,9 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
   standardGeneric('var_non_overlap')
 })
 
-setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'), 
+setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, N=NA_real_) {
-    neighborhoods <- get_hex_neighborhoods(sys_frame@data[,c('r','c')])
+    neighborhoods <- neighborhoods_non(sys_frame)
     neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
     n <- nrow(sys_frame@data)
@@ -198,7 +198,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
       group_by(r, c) %>%
       summarize_at(.vars = colnames(att_df), .funs = funs) %>%
       merge(q) %>%
-      mutate(N_j = q_j * sys_frame@a^2) %>%
+      mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
       mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
       mutate_at(.vars = names(funs), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
       summarize_at(.vars = names(funs), .funs=~sum(.))
@@ -212,11 +212,10 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 })
 
 
-setMethod('var_dorazio_c', signature(sys_frame = 'HexFrame'), 
+setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, N=NA_real_, order=1) {
     v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
     C <- gearys_c(sys_frame, order=order)
-    print(paste('C:', C))
     return(v_srs * C)
   }
 )
@@ -226,7 +225,7 @@ setGeneric('var_dorazio_i', function(sys_frame, ...) {
 })
 
 
-setMethod('var_dorazio_i', signature(sys_frame = 'HexFrame'), 
+setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, N=NA_real_, order=1) {
     v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
     morans_I <- morans_i(sys_frame, order=order)
@@ -236,7 +235,6 @@ setMethod('var_dorazio_i', signature(sys_frame = 'HexFrame'),
     } else {
       w <- 1
     }
-    print(paste('W:', w))
     return(v_srs * w)
   }
 )

@@ -17,47 +17,6 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
-#' Gets the non-overlapping hexagonal neighborhoods
-#' 
-#' @param hex_ix a dataframe with columns r and c corresponding to the row and column
-#' of the hexagonal indices
-#' @param grouping a vector of 7 elements assigning contrast coefficients to each neighborhood point
-#' @return a dataframe with columns r and c (the original sample positions) and
-#' columns r_n and c_n that are the coordinates of the neighbors.
-get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
-  # We need the top left index to subsample from
-  left <- min(hex_ix$c)
-  top  <- min(hex_ix$r[hex_ix$c==left])
-  
-  # TODO replace hex_ix with hex_sys since we are using a 
-  # deprecated function here
-  centers <- subsample_hex(hex_ix, c(top, left), 3)
-  
-  neighborhoods <- list()
-  for(i in 1:nrow(centers)) {
-    row <- centers[i, 1]
-    col <- centers[i, 2]
-    neighborhood <- matrix(NA, nrow=7, ncol=2)
-    
-    neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
-    neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
-    
-    if(length(contrasts) == 7) {
-      neighborhood <- cbind(neighborhood, contrasts)
-    }
-    
-    neighborhood <- data.frame(neighborhood)
-    neighborhood$r <- row
-    neighborhood$c <- col
-    neighborhoods[[i]] <- neighborhood
-  }
-  
- neighborhoods <- bind_rows(neighborhoods)
- colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
- 
- return(neighborhoods)
-}
-
 # TODO look at the ...'s, is this correct? Maybe they can
 # be more explicit. For example, contrasts needs to be
 # a vector of 4 elements
@@ -68,10 +27,10 @@ setGeneric('neighborhoods_non', function(sys_frame, ...) {
 
 setMethod('neighborhoods_non', signature(sys_frame='RectFrame'), 
   function(sys_frame, contrasts=NA) {
-    left <- min(rect_frame@data[,'c'])
-    top <-  min(rect_frame@data[,'r'][rect_frame@data[,'c'] == left])
+    left <- min(sys_frame@data[,'c'])
+    top <-  min(sys_frame@data[,'r'][sys_frame@data[,'c'] == left])
     
-    centers <- subsample(rect_frame, c(top, left), 2)@data[,c('r', 'c')]
+    centers <- subsample(sys_frame, c(top, left), 2)@data[,c('r', 'c')]
     
     neighborhoods <- list()
     for(i in 1:nrow(centers)) {
@@ -99,44 +58,38 @@ setMethod('neighborhoods_non', signature(sys_frame='RectFrame'),
   }
 )
 
-#' Gets the rectangular neighborhoods
-#' 
-#' @param hex_ix a dataframe with columns r and c corresponding to the row and column
-#' of the hexagonal indices
-#' @param grouping a vector of 7 elements assigning contrast coefficients to each neighborhood point
-#' @return a dataframe with columns r and c (the original sample positions) and
-#' columns r_n and c_n that are the coordinates of the neighbors.
-get_rect_neighborhoods <- function(rect_frame, contrasts=NA) {
-  # We need the top left index to subsample from
-  left <- min(rect_ix$c)
-  top  <- min(rect_ix$r[rect_ix$c==left])
-  
-  centers <- subsample_hex(hex_ix, c(top, left), 3)
-  
-  neighborhoods <- list()
-  for(i in 1:nrow(centers)) {
-    row <- centers[i, 1]
-    col <- centers[i, 2]
-    neighborhood <- matrix(NA, nrow=7, ncol=2)
+setMethod('neighborhoods_non', signature(sys_frame='HexFrame'), 
+  function(sys_frame, contrasts=NA) {
+    left <- min(sys_frame@data[,'c'])
+    top <-  min(sys_frame@data[,'r'][sys_frame@data[,'c'] == left])
     
-    neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
-    neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
+    centers <- subsample(rect_frame, c(top, left), 2)@data[,c('r', 'c')]
     
-    if(length(contrasts) == 7) {
-      neighborhood <- cbind(neighborhood, contrasts)
+    neighborhoods <- list()
+    for(i in 1:nrow(centers)) {
+      row <- centers[i, 1]
+      col <- centers[i, 2]
+      neighborhood <- matrix(NA, nrow=7, ncol=2)
+      
+      neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
+      neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
+      
+      if(length(contrasts) == 7) {
+        neighborhood <- cbind(neighborhood, contrasts)
+      }
+      
+      neighborhood <- data.frame(neighborhood)
+      neighborhood$r <- row
+      neighborhood$c <- col
+      neighborhoods[[i]] <- neighborhood
     }
     
-    neighborhood <- data.frame(neighborhood)
-    neighborhood$r <- row
-    neighborhood$c <- col
-    neighborhoods[[i]] <- neighborhood
+   neighborhoods <- bind_rows(neighborhoods)
+   colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
+   
+   return(neighborhoods)
   }
-  
- neighborhoods <- bind_rows(neighborhoods)
- colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
- 
- return(neighborhoods)
-}
+)
 
 
 setGeneric('neighborhood_matrix', function(sys_frame, ...) {
@@ -151,9 +104,13 @@ setMethod('neighborhood_matrix', signature(sys_frame='HexFrame'),
   }
 )
 
-# FIXME do this for rectangular frames
 setMethod('neighborhood_matrix', signature(sys_frame='RectFrame'), 
   function(sys_frame, order=1) {
+    # TODO Check if this is ok, it is just grabbing the NSEW neighbors, not
+    # the diagonals
+    W <- Dist(sys_frame@data[,c('r', 'c')]) <= 2*order
+    diag(W) <- 0
+    return(W)
   }
 )
 
@@ -161,7 +118,7 @@ setGeneric('gearys_c', function(sys_frame, ...) {
   standardGeneric('gearys_c')
 })
 
-setMethod('gearys_c', signature(sys_frame='HexFrame'),
+setMethod('gearys_c', signature(sys_frame='SysFrame'),
   function(sys_frame, order=1) {
     n <- nrow(sys_frame@data)
     W <- neighborhood_matrix(sys_frame, order=order)
@@ -191,7 +148,7 @@ setGeneric('morans_i', function(sys_frame, ...) {
   standardGeneric('morans_i')
 })
 
-setMethod('morans_i', signature(sys_frame='HexFrame'),
+setMethod('morans_i', signature(sys_frame='SysFrame'),
   function(sys_frame, order=1) {
     n <- nrow(sys_frame@data)
     W <- neighborhood_matrix(sys_frame, order=order)
