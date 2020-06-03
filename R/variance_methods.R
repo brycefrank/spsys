@@ -108,6 +108,42 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     Ti <- in_Q %>%
       group_by(r, c) %>%
       mutate_at(.vars=colnames(att_df), .funs=function(x){return(x*contrasts)}) %>%
+      summarize_at(.vars=colnames(att_df), .funs=function(x){return(sum(x)^2/4)}) # TODO should the denominator be 4 for hexagons?
+    
+    var <- (q * sum(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
+    return(var)
+  }
+)
+
+setMethod('var_mat', signature(sys_frame='RectFrame'),
+  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(1, -1, 1, -1)) {
+    neighborhoods <- neighborhoods_non(sys_frame)
+    
+    # Mean-center the attributes
+    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
+    d_ct <- cbind(sys_frame@data[,c('r', 'c')], att_ct)
+    neighborhoods <- merge(neighborhoods, d_ct, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    
+    # Get the number of neighborhoods with at least one point in Q
+    p <- length(colnames(att_df))
+    
+    # Set the NA values of neighborhood attributes (i.e. they are out of the area) 
+    # to zero if they are
+    zero_list <- as.list(rep(0,p))
+    names(zero_list) <- colnames(att_df)
+    in_Q <- neighborhoods %>%
+      replace_na(zero_list)
+    
+    q <- 9
+    n <- nrow(sys_frame@data)
+    
+    # A function that generates the T value for each neighborhood
+    summ_df <- function(x) {return(sum(x * in_Q$contrasts)^2  / 4)}
+    
+    Ti <- in_Q %>%
+      group_by(r, c) %>%
+      mutate_at(.vars=colnames(att_df), .funs=function(x){return(x*contrasts)}) %>%
       summarize_at(.vars=colnames(att_df), .funs=function(x){return(sum(x)^2/4)})
     
     var <- (q * sum(Ti[,sys_frame@attributes,drop=FALSE])) / n^2

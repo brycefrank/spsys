@@ -2,6 +2,7 @@ library(sp)
 library(raster)
 library(devtools)
 library(rgdal)
+library(sp)
 devtools::load_all()
 set.seed(12)
 
@@ -29,3 +30,22 @@ saveRDS(block, file="data/block_hex.RDS")
 
 or_hex <- block[complete.cases(block@data),]
 saveRDS(or_hex, file="data/or_hex.RDS")
+
+hex_pts <- readRDS('data/hex_pts.RDS')
+
+d <- 7000
+
+min_x <- bbox(hex_pts)[1,1]
+min_y <- bbox(hex_pts)[2,1]
+max_x <- bbox(hex_pts)[1,2]
+max_y <- bbox(hex_pts)[2,2]
+
+x <- seq(min_x, max_x, by=d)
+y <- seq(min_y, max_y, by=d)
+
+coords <- expand.grid(x,y)
+
+coords$z_1 <- rnorm(nrow(coords))
+
+rect_pts <- SpatialPointsDataFrame(coords[,c('Var1', 'Var2')], data=coords[,c('z_1'),drop=FALSE])
+saveRDS(rect_pts, 'data/rect_pts.RDS')

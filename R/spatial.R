@@ -17,7 +17,7 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
-#' Gets the hexagonal neighborhoods
+#' Gets the non-overlapping hexagonal neighborhoods
 #' 
 #' @param hex_ix a dataframe with columns r and c corresponding to the row and column
 #' of the hexagonal indices
@@ -58,6 +58,47 @@ get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
  return(neighborhoods)
 }
 
+# TODO look at the ...'s, is this correct? Maybe they can
+# be more explicit. For example, contrasts needs to be
+# a vector of 4 elements
+setGeneric('neighborhoods_non', function(sys_frame, ...) {
+  standardGeneric('neighborhoods_non')
+})
+
+
+setMethod('neighborhoods_non', signature(sys_frame='RectFrame'), 
+  function(sys_frame, contrasts=NA) {
+    left <- min(rect_frame@data[,'c'])
+    top <-  min(rect_frame@data[,'r'][rect_frame@data[,'c'] == left])
+    
+    centers <- subsample(rect_frame, c(top, left), 2)@data[,c('r', 'c')]
+    
+    neighborhoods <- list()
+    for(i in 1:nrow(centers)) {
+      row <- centers[i, 1]
+      col <- centers[i, 2]
+      neighborhood <- matrix(NA, nrow=4, ncol=2)
+      
+      neighborhood[,1] <- c(row, row, row + 1, row + 1)
+      neighborhood[,2] <- c(col, col + 1, col, col + 1)
+      
+      if(length(contrasts) == 4) {
+        neighborhood <- cbind(neighborhood, contrasts)
+      }
+      
+      neighborhood <- data.frame(neighborhood)
+      neighborhood$r <- row
+      neighborhood$c <- col
+      neighborhoods[[i]] <- neighborhood
+    }
+    
+   neighborhoods <- bind_rows(neighborhoods)
+   colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
+   
+   return(neighborhoods)
+  }
+)
+
 #' Gets the rectangular neighborhoods
 #' 
 #' @param hex_ix a dataframe with columns r and c corresponding to the row and column
@@ -65,7 +106,7 @@ get_hex_neighborhoods <- function(hex_ix, contrasts=NA) {
 #' @param grouping a vector of 7 elements assigning contrast coefficients to each neighborhood point
 #' @return a dataframe with columns r and c (the original sample positions) and
 #' columns r_n and c_n that are the coordinates of the neighbors.
-get_rect_neighborhoods <- function(rect_ix, contrasts=NA) {
+get_rect_neighborhoods <- function(rect_frame, contrasts=NA) {
   # We need the top left index to subsample from
   left <- min(rect_ix$c)
   top  <- min(rect_ix$r[rect_ix$c==left])
