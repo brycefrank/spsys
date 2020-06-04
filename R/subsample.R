@@ -65,7 +65,7 @@ transform_coords <- function(coords) {
   c <- round(c)
   r <- round(r)
   
-  return(data.frame(c=c, r=r))
+  return(data.frame(r=r, c=c))
   
 }
 
