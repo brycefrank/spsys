@@ -15,7 +15,12 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
     
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
     n <- length(sys_frame)
-    var_mu <- (n - 1)^(-1) * n^(-1) *  colSums((att_df - colMeans(att_df))^2)
+    
+    att_means <- colMeans(att_df)
+    ssq <- colSums(sweep(att_df, 2, att_means)^2)
+    
+    var_mu <- (n - 1)^(-1) * n^(-1) * ssq 
+    print(var_mu)
     
     if(fpc) {
       var_mu <- var_mu * (1-n/N)
@@ -81,7 +86,7 @@ setGeneric('var_mat', function(sys_frame, ...) {
 setMethod('var_mat', signature(sys_frame='HexFrame'),
   # TODO fix contrast defaults to something that makes sense
   function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(1,-1, 0, 0, 0, 1, -1)) {
-    neighborhoods <- get_hex_neighborhoods(sys_frame@data[,c('r','c')], contrasts=contrasts)
+    neighborhoods <- neighborhoods_non(sys_frame, contrasts=contrasts)
     
     # Mean-center the attributes
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
@@ -174,6 +179,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_) {
     neighborhoods <- neighborhoods_non(sys_frame)
     neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    print(neighborhoods)
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
     n <- nrow(sys_frame@data)
     
@@ -185,23 +191,24 @@ setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
     # Prepare a vector specifying the pop variance function for each attribute
     p <- length(colnames(att_df))
     funs <- rep('pop_var', p)
-    names(funs) <- paste(colnames(att_df), 'var', sep='_')
+    names(funs) <- colnames(att_df)
     
     q <- neighborhoods %>%
       na.omit() %>%
       group_by(r, c) %>%
       summarize(q_j=n())
+    print(neighborhoods)
     
     # TODO some neighborhoods return a 0 variance
     neighborhoods <- neighborhoods %>%
-      na.omit() %>%
-      group_by(r, c) %>%
-      summarize_at(.vars = colnames(att_df), .funs = funs) %>%
-      merge(q) %>%
-      mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
-      mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
-      mutate_at(.vars = names(funs), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
-      summarize_at(.vars = names(funs), .funs=~sum(.))
+      na.omit()# %>%
+      #group_by(r, c) %>%
+      #summarize_at(.vars = colnames(att_df), .funs = funs) %>%
+      #merge(q) %>%
+      #mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
+      #mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
+      #mutate_at(.vars = names(funs), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
+      #summarize_at(.vars = names(funs), .funs=~sum(.))
     
     neighborhoods
   }

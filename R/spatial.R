@@ -63,7 +63,7 @@ setMethod('neighborhoods_non', signature(sys_frame='HexFrame'),
     left <- min(sys_frame@data[,'c'])
     top <-  min(sys_frame@data[,'r'][sys_frame@data[,'c'] == left])
     
-    centers <- subsample(rect_frame, c(top, left), 2)@data[,c('r', 'c')]
+    centers <- subsample(sys_frame, c(top, left), 3)@data[,c('r', 'c')]
     
     neighborhoods <- list()
     for(i in 1:nrow(centers)) {

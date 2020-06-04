@@ -18,7 +18,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA) {
   hex_frame@proj4string <- sys_frame@proj4string
   hex_frame@coords <- sys_frame@coords
   hex_frame@attributes <- sys_frame@attributes
-  
+  print(index)
   # TODO make this condition a bit cleaner
   if(length(index) > 1) {
     hex_frame@data[,c('r', 'c')] <- index
@@ -43,12 +43,17 @@ setGeneric('subsample', function(object, start_pos, a){
 })
 
 setMethod('merge', signature(x='HexFrame', y='data.frame'),
-  function(x, y, ...) {
-    HexFrame(callNextMethod(x,y, ...), attributes=x@attributes)
+  function(x, y, index, ...) {
+    HexFrame(callNextMethod(x,y, ...), attributes=x@attributes, index=index)
   }
 )
 
 setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
+  if(nrow(object) <= a) {
+    stop('Attempting to subsample SysFrame that is the same size
+          or smaller than a.')
+  }
+  
   max_row <- max(object@data$r[!is.na(object@data$r)])
   max_col <- max(object@data$c[!is.na(object@data$c)])
   
@@ -75,12 +80,15 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
     j <- j + 1
   }
  
-  # I am wondering if this is correct? 
-  # There was a problem with RectFrame where it was returning
-  # the same sample...do these need to be standardized?
   samp_ix   <- data.frame(r = r_samp, c = c_samp)
-  samp <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
+  samp <- merge(object, samp_ix, index=samp_ix[,c('r', 'c')], by=c('r', 'c'), all.x=FALSE)
+  
+  # Standardize the indices
+  samp@data$c <- ceiling( (samp@data$c - min(samp@data$c)) / a) + 1
+  samp@data$r <- ((samp@data$r - min(samp@data$r)) / a) + 1
+  
   samp@a <- a
+  
   return(samp)
 })
 

@@ -76,7 +76,7 @@ neighbor_indexing <- function(tesselation) {
       
       # Now attach the theta key
       non_na <- merge(non_na, theta_key, by='theta', all.x=TRUE)
-      visited[this_c$rix, c('r', 'c')] <- c(non_na$r.x - non_na$r.y, non_na$c.x - non_na$c.y)
+      visited[this_c$rix, c('r', 'c')] <- c(non_na$c.x - non_na$c.y, non_na$r.x - non_na$r.y)
     }
     
     # Prepare the next step, what indices do we need to visit?
