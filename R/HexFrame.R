@@ -38,7 +38,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA) {
 #' @param start_pos the starting position
 #' @param a The order of the subset: 2 represents sampling every other
 #' @return A dataframe of row and column indices that have been sampled.
-setGeneric('subsample', function(object, start_pos, a){
+setGeneric('subsample', function(object, start_pos, a, standardize=TRUE){
   standardGeneric('subsample')
 })
 
@@ -48,7 +48,7 @@ setMethod('merge', signature(x='HexFrame', y='data.frame'),
   }
 )
 
-setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
+setMethod('subsample', 'HexFrame', function(object, start_pos, a, standardize) {
   if(nrow(object) <= a) {
     stop('Attempting to subsample SysFrame that is the same size
           or smaller than a.')
@@ -84,8 +84,10 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   samp <- merge(object, samp_ix, index=samp_ix[,c('r', 'c')], by=c('r', 'c'), all.x=FALSE)
   
   # Standardize the indices
-  samp@data$c <- ceiling( (samp@data$c - min(samp@data$c)) / a) + 1
-  samp@data$r <- ((samp@data$r - min(samp@data$r)) / a) + 1
+  if(standardize) {
+    samp@data$c <- ceiling( (samp@data$c - min(samp@data$c)) / a) + 1
+    samp@data$r <- ((samp@data$r - min(samp@data$r)) / a) + 1
+  }
   
   samp@a <- a
   
