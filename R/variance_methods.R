@@ -159,6 +159,7 @@ setMethod('var_mat', signature(sys_frame='RectFrame'),
 #' Calculate the variance using a denominator of n
 #' instead of n-1
 pop_var <- function(z) {
+  print(z)
   n <- length(z)
   ssq <- sum((z - mean(z))^2)
   ssq/n
@@ -179,38 +180,38 @@ setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_) {
     neighborhoods <- neighborhoods_non(sys_frame)
     neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
-    print(neighborhoods)
-    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
-    n <- nrow(sys_frame@data)
-    
-    N_neighbs <- neighborhoods %>%
-      group_by(r, c) %>%
-      summarize(n=n()) %>%
-      nrow()
-    
-    # Prepare a vector specifying the pop variance function for each attribute
-    p <- length(colnames(att_df))
-    funs <- rep('pop_var', p)
-    names(funs) <- colnames(att_df)
-    
-    q <- neighborhoods %>%
-      na.omit() %>%
-      group_by(r, c) %>%
-      summarize(q_j=n())
-    print(neighborhoods)
-    
-    # TODO some neighborhoods return a 0 variance
-    neighborhoods <- neighborhoods %>%
-      na.omit()# %>%
-      #group_by(r, c) %>%
-      #summarize_at(.vars = colnames(att_df), .funs = funs) %>%
-      #merge(q) %>%
-      #mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
-      #mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
-      #mutate_at(.vars = names(funs), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
-      #summarize_at(.vars = names(funs), .funs=~sum(.))
-    
-    neighborhoods
+    return(neighborhoods)
+    #atts <- sys_frame@attributes
+    #att_df <- sys_frame@data[, atts, drop=FALSE]
+    #n <- nrow(sys_frame@data)
+    #
+    #neighbor_groups <- neighborhoods %>%
+    #  na.omit(target.colnames=c('r', 'c', atts)) %>%
+    #  group_by(r,c)
+    #
+    #N_neighbs <- neighbor_groups %>%
+    #  summarize(n=n()) %>%
+    #  nrow()
+    #
+    ## Prepare a vector specifying the pop variance function for each attribute
+    #p <- length(colnames(att_df))
+    #funs <- rep('pop_var', p)
+    #
+    #q <- neighbor_groups %>%
+    #  summarize(q_j=n())
+    #
+    ## TODO some neighborhoods return a 0 variance
+    #var_non <- neighbor_groups %>%
+    #  summarize_at(.vars = atts, pop_var) #%>%
+    #
+    #  #merge(q) %>%
+    #  #mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
+    #  #mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) #%>%
+    #  #mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs)) #%>%
+    #  #summarize_at(.vars = colnames(att_df), .funs=~sum(.))
+    #
+    #print(var_non$VOLCFGRS)
+    #neighborhoods
   }
 )
 

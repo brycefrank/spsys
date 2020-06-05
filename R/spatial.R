@@ -60,12 +60,7 @@ setMethod('neighborhoods_non', signature(sys_frame='RectFrame'),
 
 setMethod('neighborhoods_non', signature(sys_frame='HexFrame'), 
   function(sys_frame, contrasts=NA) {
-    left <- min(sys_frame@data[,'c'])
-    top <-  min(sys_frame@data[,'r'][sys_frame@data[,'c'] == left])
-    
-    # TODO now that this gets standardized it does not return 'absolute' indices
-    # so we should make an argument to leave unstandardized?
-    centers <- subsample(sys_frame, c(top, left), 3, standardize=FALSE)@data[,c('r', 'c')]
+    centers <- subsample(sys_frame, c(1, 1), 3, standardize=FALSE)@data[,c('r', 'c')]
     
     neighborhoods <- list()
     for(i in 1:nrow(centers)) {
