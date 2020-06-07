@@ -6,6 +6,7 @@ setClass('HexFrame', contains='SysFrame',
            a='numeric'
          ))
 
+
 # TODO not sure why this needs to be repeated from sysframe
 # is it possible to do something like callNextMethod but for
 # instantiation?
@@ -19,6 +20,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE)
   hex_frame@coords <- sys_frame@coords
   hex_frame@attributes <- sys_frame@attributes
   
+  
   # TODO make this condition a bit cleaner
   if(length(index) > 1) {
     hex_frame@data[,c('r', 'c')] <- index
@@ -26,27 +28,22 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE)
     hex_frame@data[,c('r', 'c')] <- transform_coords(hex_frame@coords)
   }
   
-  hex_frame <- hex_frame[complete.cases(hex_frame@data[,c('r', 'c')]),]
+  hex_frame@data <- hex_frame@data[complete.cases(hex_frame@data[,c('r', 'c')]),]
   
-  if(standardize) {
-    
-    hex_frame@data$c <- ceiling( (hex_frame@data$c - min(hex_frame@data$c))) + 1
-    hex_frame@data$r <- ((hex_frame@data$r - min(hex_frame@data$r))) + 1
-    
-    # If odd rows correspond to even columns, add 1 to column indices
-    first_r <- hex_frame@data$r[[1]]
-    first_c <- hex_frame@data$c[hex_frame@data$r == first_r][[1]]
-    
-    print(first_r)
-    print(first_c)
-    
-    odd_row_even_col <- (first_r %% 2 != 0) & (first_c %% 2 == 0)
-    even_row_odd_col <- (first_r %% 2 == 0) & (first_c %% 2 != 0)
-    
-    if(odd_row_even_col | even_row_odd_col) {
-      hex_frame@data$c <- hex_frame@data$c + 1
-    }
-    
+  # Ensure the rows start from 1 and the columns start from 1
+  min_r <- min(hex_frame@data$r)
+  min_c <- min(hex_frame@data$c)
+  
+  hex_frame@data$r <- hex_frame@data$r - min_r + 1
+  
+  # For columns, if the min_r and min_c "disagree" we must add two instead
+  # of one to get the "correct" hexagonal specification
+  if (min_r %% 2 == 0 & min_c %% 2!=0) {
+    hex_frame@data$c <- hex_frame@data$c - min_c + 2
+  } else if (min_r %% 2 !=0 & min_c %% 2 == 0) {
+    hex_frame@data$c <- hex_frame@data$c - min_c + 2
+  } else {
+    hex_frame@data$c <- hex_frame@data$c - min_c + 1
   }
   
   hex_frame
@@ -72,37 +69,20 @@ setMethod('merge', signature(x='HexFrame', y='data.frame'),
   }
 )
 
-setMethod('subsample', 'HexFrame', function(object, start_pos, a, standardize) {
+setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   if(nrow(object) <= a) {
     stop('Attempting to subsample SysFrame that is the same size
           or smaller than a.')
   }
   
-  max_r <- max(object@data$r)
-  max_c <- max(object@data$c)
+  samp_ix   <- subsample_hex_ix(object@data[,c('r', 'c')], start_pos, a)
   
-  r_samp <- seq(1, max_r, a)
-  c_samp <- seq(1, max_c, a)
+  # FIXME something weird going on with merge...as if it is getting "shuffled"
+  samp      <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
   
-  samp_ix <- expand.grid(r_samp, c_samp)
-  colnames(samp_ix) <- c('r', 'c')
-  
-  # Even-row odd-columns and odd-row even-columns should not exist
-  # Get only even-row even-column indices and odd-row odd-column indices
-  even_row_even_column <- (samp_ix$r %% 2 == 0) & (samp_ix$c %% 2 == 0)
-  odd_row_odd_column   <- (samp_ix$r %% 2 != 0) & (samp_ix$c %% 2 != 0)
-  
-  samp_ix <- rbind(samp_ix[even_row_even_column,], samp_ix[odd_row_odd_column,])
-  
-  samp_ix[,1] <- samp_ix[,1] + start_pos[[1]]
-  samp_ix[,2] <- samp_ix[,2] + start_pos[[2]]
-  
-  samp <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
-  
-  if(standardize) {
-    samp@data$c <- ceiling( (samp@data$c - min(samp@data$c)) / a) + 1
-    samp@data$r <- ((samp@data$r - min(samp@data$r)) / a) + 1
-  }
+  # "Compress" these indices back to normal
+  #samp@data$r <- (samp@data$r - 1) / a + 1
+  #samp@data$c <- (samp@data$c - 1) / a + 1
   
   samp@a <- a
   return(samp)

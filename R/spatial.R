@@ -60,6 +60,7 @@ setMethod('neighborhoods_non', signature(sys_frame='RectFrame'),
 
 setMethod('neighborhoods_non', signature(sys_frame='HexFrame'), 
   function(sys_frame, contrasts=NA) {
+    # TODO broken for certain configurations
     centers <- subsample(sys_frame, c(1, 1), 3, standardize=FALSE)@data[,c('r', 'c')]
     
     neighborhoods <- list()

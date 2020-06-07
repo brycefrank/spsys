@@ -90,3 +90,34 @@ neighbor_indexing <- function(tesselation) {
   
   return(visited)
 }
+
+subsample_hex_ix <- function(hex_ix, start_pos, a) {
+  max_r <- max(hex_ix$r)
+  max_c <- max(hex_ix$c)
+  
+  r_start <- start_pos[[1]]
+  c_start <- start_pos[[2]]
+  
+  r_seq <- seq(r_start, max_r, a)
+  r_samp <- c()
+  c_samp <- c()
+  
+  j <- 1
+  for(r in r_seq) {
+    if (j %% 2 == 0) {
+      add <- seq(c_start-a, max_c, a*2)
+    } else {
+      add <- seq(c_start-2*a, max_c, a*2)
+    }
+    
+    add <- add[add>0]
+    c_samp <- c(c_samp, add)
+    r_samp <- c(r_samp, rep(r, length(add)))
+    
+    
+    j <- j + 1
+  }
+  
+  samp_ix   <- data.frame(r = r_samp, c = c_samp)
+  samp_ix
+}

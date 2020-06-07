@@ -49,3 +49,18 @@ coords$z_1 <- rnorm(nrow(coords))
 
 rect_pts <- SpatialPointsDataFrame(coords[,c('Var1', 'Var2')], data=coords[,c('z_1'),drop=FALSE])
 saveRDS(rect_pts, 'data/rect_pts.RDS')
+
+## below makes a small hexagonal testing dataset ##
+#hex_pts   <- readRDS('data/hex_pts.RDS')
+#
+#min_x <- bbox(hex_pts)[1,1]
+#min_y <- bbox(hex_pts)[2,1]
+#
+#max_x <- min_x + 15000
+#max_y <- min_y + 19000
+#
+#hex_pts_small <- hex_pts[hex_pts@coords[,1] < max_x & hex_pts@coords[,2] < max_y,]
+#
+#plot(hex_pts_small)
+#saveRDS(hex_pts_small, 'data/hex_pts_small.RDS')
+#

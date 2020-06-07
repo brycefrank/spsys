@@ -1,3 +1,5 @@
+library(sp)
+
 setClass('SysFrame', contains='SpatialPointsDataFrame',
          slots=list(attributes="character"))
 
@@ -31,6 +33,10 @@ setMethod('merge', signature(x='SysFrame', y='data.frame'),
     x$DoNotUse_temp_sequential_ID_963 <- 1:nrow(x)
     d <- merge(x@data, y, by=by, by.x=by.x, by.y=by.y, suffixes=suffixes, 
                incomparables=incomparables, all.x=all.x, all.y=FALSE)
+    
+    if(nrow(d) == 0) {
+      stop('Empty merge')
+    }
     
     if (!all.x) {
       # Spatial* objects cannot have NULL geometries
