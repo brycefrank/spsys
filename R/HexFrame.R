@@ -28,7 +28,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE)
     hex_frame@data[,c('r', 'c')] <- transform_coords(hex_frame@coords)
   }
   
-  hex_frame@data <- hex_frame@data[complete.cases(hex_frame@data[,c('r', 'c')]),]
+  hex_frame <- hex_frame[complete.cases(hex_frame@data[,c('r', 'c')]),]
   
   # Ensure the rows start from 1 and the columns start from 1
   min_r <- min(hex_frame@data$r)
@@ -36,8 +36,8 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE)
   
   hex_frame@data$r <- hex_frame@data$r - min_r + 1
   
-  # For columns, if the min_r and min_c "disagree" we must add two instead
-  # of one to get the "correct" hexagonal specification
+  # For columns, if the min_r and min_c "disagree" we have a 'beta'
+  # configured index set, and need to bump the columns over by one index
   if (min_r %% 2 == 0 & min_c %% 2!=0) {
     hex_frame@data$c <- hex_frame@data$c - min_c + 2
   } else if (min_r %% 2 !=0 & min_c %% 2 == 0) {
@@ -46,6 +46,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE)
     hex_frame@data$c <- hex_frame@data$c - min_c + 1
   }
   
+
   hex_frame
 }
 
@@ -81,8 +82,8 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   samp      <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
   
   # "Compress" these indices back to normal
-  #samp@data$r <- (samp@data$r - 1) / a + 1
-  #samp@data$c <- (samp@data$c - 1) / a + 1
+  samp@data$r <- (samp@data$r - 1) / a + 1
+  samp@data$c <- (samp@data$c - 1) / a + 1
   
   samp@a <- a
   return(samp)

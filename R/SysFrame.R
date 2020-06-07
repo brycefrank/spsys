@@ -30,7 +30,7 @@ setMethod('merge', signature(x='SysFrame', y='data.frame'),
       stop('x has no attributes')
     
     
-    x$DoNotUse_temp_sequential_ID_963 <- 1:nrow(x)
+    x$temp_ID <- 1:nrow(x)
     d <- merge(x@data, y, by=by, by.x=by.x, by.y=by.y, suffixes=suffixes, 
                incomparables=incomparables, all.x=all.x, all.y=FALSE)
     
@@ -47,7 +47,7 @@ setMethod('merge', signature(x='SysFrame', y='data.frame'),
     }
     
     # sort the merged table
-    d <- d[order(d$DoNotUse_temp_sequential_ID_963), ]
+    d <- d[order(d$temp_ID), ]
     
     # Normally we want one-to-one joins with spatial data
     if (!duplicateGeoms) {
@@ -57,9 +57,9 @@ setMethod('merge', signature(x='SysFrame', y='data.frame'),
     } 
     
     # duplicate (duplicateGeoms = TRUE) or remove (all.x=FALSE) records if needed
-    x <- x[d$DoNotUse_temp_sequential_ID_963, ]
+    x <- x[d$temp_ID, ]
     
-    d$DoNotUse_temp_sequential_ID_963 <- NULL
+    d$temp_ID <- NULL
     x@data <- d
     x
 }
