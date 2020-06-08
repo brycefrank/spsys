@@ -93,28 +93,31 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
     d_ct <- cbind(sys_frame@data[,c('r', 'c')], att_ct)
     neighborhoods <- merge(neighborhoods, d_ct, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    atts <- colnames(att_df)
     
     # Get the number of neighborhoods with at least one point in Q
-    p <- length(colnames(att_df))
+    p <- length(atts)
     
     # Set the NA values of neighborhood attributes (i.e. they are out of the area) 
     # to zero if they are
     zero_list <- as.list(rep(0,p))
-    names(zero_list) <- colnames(att_df)
+    names(zero_list) <- atts
+    
     in_Q <- neighborhoods %>%
       replace_na(zero_list)
+    
+    # We have to rename 'contrasts' column to avoid a bug
+    colnames(in_Q)[[3]] <- 'contr'
     
     q <- 9
     n <- nrow(sys_frame@data)
     
     # A function that generates the T value for each neighborhood
-    summ_df <- function(x) {return(sum(x * in_Q$contrasts)^2  / 4)}
-    contrast_fun <- function(x, contrasts) {return(x*contrasts)}
+    get_Ti <- function(x, contr) {return(sum(x * contr)^2  / 4)}
     
     Ti <- in_Q %>%
       group_by(r, c) %>%
-      mutate_at(.vars=colnames(att_df), .funs=~contrast_fun(., contrasts)) %>%
-      summarize_at(.vars=colnames(att_df), .funs=~summ_df(.)) # TODO should the denominator be 4 for hexagons?
+      summarize_at(.vars=atts, .funs=~get_Ti(., contr))
     
     var <- (q * colSums(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
     return(var)
