@@ -10,10 +10,14 @@ License: MIT
 LazyData: true
 RoxygenNote: 6.1.1
 Collate: 
+    'subsample.R'
     'SysFrame.R'
     'HexFrame.R'
+    'RectFrame.R'
+    'assessment.R'
     'cast_hex.R'
+    'indexing.R'
+    'old.R'
     'sim_pop.R'
     'spatial.R'
-    'subsample.R'
-    'variance_est.R'
+    'variance_methods.R'

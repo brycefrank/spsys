@@ -1,16 +1,29 @@
 #' @include SysFrame.R
+#' @include subsample.R
 
+#validate_hex_frame <- function(object) {
+#  ix <- object@data[,c('r', 'c')]
+#  er_oc <- sum(ix$c[ix$r %% 2 == 0] %% 2 != 0)
+#  or_ec <- sum(ix$c[ix$r %% 2 != 0] %% 2 == 0)
+#  
+#  if(er_oc + or_ec > 0) {
+#    error_msg <- sprintf('This index had %i even-row odd-row matchings and %i odd-row even-row matchings,
+#              there should be 0 of each', er_oc, or_ec)
+#    return(error_msg)
+#  } else {
+#    return(TRUE)
+#  }
+#}
 
 setClass('HexFrame', contains='SysFrame',
          slots = list(
            a='numeric'
          ))
 
-
 # TODO not sure why this needs to be repeated from sysframe
 # is it possible to do something like callNextMethod but for
 # instantiation?
-HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE) {
+HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE, a=1) {
   sys_frame <- SysFrame(splydf, attributes)
   
   hex_frame <- new('HexFrame')
@@ -34,6 +47,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE)
   min_r <- min(hex_frame@data$r)
   min_c <- min(hex_frame@data$c)
   
+  
   hex_frame@data$r <- hex_frame@data$r - min_r + 1
   
   # For columns, if the min_r and min_c "disagree" we have a 'beta'
@@ -45,7 +59,6 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE)
   } else {
     hex_frame@data$c <- hex_frame@data$c - min_c + 1
   }
-  
 
   hex_frame
 }
@@ -76,15 +89,18 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
           or smaller than a.')
   }
   
-  samp_ix   <- subsample_hex_ix(object@data[,c('r', 'c')], start_pos, a)
+  samp_ix <- subsample_hex_ix(object@data[,c('r', 'c')], start_pos, a)
+  object@data$TEMP <- 1:nrow(object@data)
+  keep_ix <- merge(object@data, samp_ix, by=c('r', 'c'), all.x=FALSE)[,c('r', 'c', 'TEMP')]
   
-  # FIXME something weird going on with merge...as if it is getting "shuffled"
-  samp      <- merge(object, samp_ix, by=c('r', 'c'), all.x=FALSE)
+  # Now "collapse" keep_ix to the standard index set
+  keep_ix$r <- (keep_ix$r - start_pos[[1]]) / a + start_pos[[1]]
+  keep_ix$c <- (keep_ix$c - start_pos[[2]]) / a + start_pos[[2]]
   
-  # "Compress" these indices back to normal
-  samp@data$r <- (samp@data$r - 1) / a + 1
-  samp@data$c <- (samp@data$c - 1) / a + 1
+  new_spdf <- SpatialPointsDataFrame(coords = object@coords[keep_ix$TEMP,], data=object@data[keep_ix$TEMP,])
+  crs(new_spdf) <- crs(object)
   
+  samp <- HexFrame(new_spdf, attributes=object@attributes, index=keep_ix[,c('r', 'c')])
   samp@a <- a
   return(samp)
 })

@@ -109,13 +109,14 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     
     # A function that generates the T value for each neighborhood
     summ_df <- function(x) {return(sum(x * in_Q$contrasts)^2  / 4)}
+    contrast_fun <- function(x, contrasts) {return(x*contrasts)}
     
     Ti <- in_Q %>%
       group_by(r, c) %>%
-      mutate_at(.vars=colnames(att_df), .funs=function(x){return(x*contrasts)}) %>%
-      summarize_at(.vars=colnames(att_df), .funs=function(x){return(sum(x)^2/4)}) # TODO should the denominator be 4 for hexagons?
+      mutate_at(.vars=colnames(att_df), .funs=~contrast_fun(., contrasts)) %>%
+      summarize_at(.vars=colnames(att_df), .funs=~summ_df(.)) # TODO should the denominator be 4 for hexagons?
     
-    var <- (q * sum(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
+    var <- (q * colSums(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
     return(var)
   }
 )

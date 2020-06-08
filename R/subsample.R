@@ -1,6 +1,3 @@
-library(sp)
-library(rgeos)
-
 #' For a given sampling interval, return the set of all possible starting positions
 #' 
 #' @param a The sampling interval
