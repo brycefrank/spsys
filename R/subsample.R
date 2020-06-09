@@ -87,3 +87,66 @@ index_sq <- function(square_polys) {
   return(sq_ix)
   
 }
+
+# TODO just make this a method
+subsample_hex_ix <- function(hex_ix, start_pos, a) {
+  max_r <- max(hex_ix$r)
+  max_c <- max(hex_ix$c)
+  
+  r_seq <- seq(0, max_r-1, a)
+  r_samp <- c()
+  c_samp <- c()
+  
+  j <- 0
+  for(r in r_seq) {
+    if (j %% 2 == 0) {
+      add <- seq(0, max_c-1, a*2)
+    } else {
+      add <- seq(-a, max_c-1, a*2)
+      add <- add[add>0]
+    }
+    
+    c_samp <- c(c_samp, add)
+    r_samp <- c(r_samp, rep(r, length(add)))
+    
+    
+    j <- j + 1
+  }
+  
+  r_samp <- r_samp + start_pos[[1]]
+  c_samp <- c_samp + start_pos[[2]]
+  
+  samp_ix   <- data.frame(r = r_samp, c = c_samp)
+  samp_ix
+}
+
+
+#' There is a way to subsample a set of hexagonal
+#' indices such that we obtain a compact set of 
+#' neighborhoods. Implemented here.
+subsample_hex_ix_compact <- function(ix) {
+  max_r <- max(max(ix$r), 14)
+  max_c <- max(max(ix$c), 14)
+  
+  samp_ix <- list()
+  
+  browser()
+  # Make a grid for each row
+  for(j in 0:14) {
+    col_shift <- -j * 5
+    
+    r_seq <- seq(j, max_r, 14)
+    c_seq <- seq(col_shift, max_c, 14)
+    c_seq <- c_seq[c_seq>=0]
+    
+    samp_ix[[j+1]] <- expand.grid(r_seq, c_seq)
+  }
+  
+  samp_ix <- bind_rows(samp_ix)
+  
+  # Bump over to (1,1 origin)
+  samp_ix <- samp_ix+1
+  colnames(samp_ix) <- c('r', 'c')
+  
+  samp_ix
+}

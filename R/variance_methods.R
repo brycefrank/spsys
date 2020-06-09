@@ -84,8 +84,10 @@ setGeneric('var_mat', function(sys_frame, ...) {
 # are inside Q (which is the study area in Matern's notatio)
 # TODO check appropriateness of FPC
 setMethod('var_mat', signature(sys_frame='HexFrame'),
-  # TODO fix contrast defaults to something that makes sense
   function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(1,-1, 0, 0, 0, 1, -1)) {
+    # FIXME matern estimator uses a particular kind of neighborhood
+    # that is just "groups" of 4 for RectFrame. Think a little deeper about this 
+    # for hexagonal structures. Maybe 'triangular' neighborhoods? Paralellograms?
     neighborhoods <- neighborhoods_non(sys_frame, contrasts=contrasts)
     
     # Mean-center the attributes
@@ -126,6 +128,8 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
 
 setMethod('var_mat', signature(sys_frame='RectFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(1, -1, 1, -1)) {
+    # FIXME matern estimator uses a particular kind of neighborhood
+    # that is just "groups" of 4. Probably worth its own method
     neighborhoods <- neighborhoods_non(sys_frame)
     
     # Mean-center the attributes
@@ -168,7 +172,6 @@ pop_var <- function(z) {
   ssq/n
 }
 
-
 # TODO give this a more descriptive name
 # TODO implement fpc in a better way upstream
 weight_var <- function(var, q_j, fpc, N_neighbs) {
@@ -179,42 +182,63 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
   standardGeneric('var_non_overlap')
 })
 
-setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'), 
+setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_) {
-    neighborhoods <- neighborhoods_non(sys_frame)
-    neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
-    atts <- sys_frame@attributes
-    att_df <- sys_frame@data[, atts, drop=FALSE]
-    n <- nrow(sys_frame@data)
+    nbh <- neighborhoods_non(sys_frame)
+    nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
-    # FIXME check if it is appropriate to include the center point of a hexagonal neighborhood
-    neighbor_groups <- neighborhoods %>%
-      drop_na(c('r', 'c', atts)) %>%
-      group_by(r,c)
-    
-    N_neighbs <- neighbor_groups %>%
-      summarize(n=n()) %>%
-      nrow()
-    
-    # Prepare a vector specifying the pop variance function for each attribute
-    p <- length(colnames(att_df))
-    funs <- rep('pop_var', p)
-    
-    q <- neighbor_groups %>%
-      summarize(q_j=n())
-    
-    # TODO some neighborhoods return a 0 variance
-    var_non <- neighbor_groups %>%
-      summarize_at(.vars = atts, pop_var) %>%
-      merge(q) %>%
-      mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
-      mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
-      mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
-      summarize_at(.vars = colnames(att_df), .funs=~sum(.))
-    
-    return(var_non)
+    return(nbh)
   }
 )
+
+#setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'), 
+#  function(sys_frame, fpc=FALSE, N=NA_real_) {
+#    neighborhoods <- neighborhoods(sys_frame, sep=)
+#    neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+#    atts <- sys_frame@attributes
+#    att_df <- sys_frame@data[, atts, drop=FALSE]
+#    n <- nrow(sys_frame@data)
+#    
+#    # FIXME check if it is appropriate to include the center point of a hexagonal neighborhood
+#    neighbor_groups <- neighborhoods %>%
+#      drop_na(c('r', 'c', atts)) %>%
+#      group_by(r,c)
+#    
+#    N_neighbs <- neighbor_groups %>%
+#      summarize(n=n()) %>%
+#      nrow()
+#    
+#    # Prepare a vector specifying the pop variance function for each attribute
+#    p <- length(colnames(att_df))
+#    funs <- rep('pop_var', p)
+#    
+#    q <- neighbor_groups %>%
+#      summarize(q_j=n())
+#    
+#    # TODO some neighborhoods return a 0 variance
+#    var_non <- neighbor_groups %>%
+#      summarize_at(.vars = atts, pop_var) %>%
+#      merge(q) %>%
+#      mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
+#      mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
+#      mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
+#      summarize_at(.vars = colnames(att_df), .funs=~sum(.))
+#    
+#    return(var_non)
+#  }
+#)
+
+
+setGeneric('var_overlap', function(sys_frame, ...) {
+  standardGeneric('var_overlap')
+})
+
+setMethod('var_overlap', signature(sys_frame = 'HexFrame'),
+  function(sys_frame, fpc=FALSE, N=NA_real_) {
+    
+  }
+)
+
 
 setGeneric('var_dorazio_c', function(sys_frame, ...) {
   standardGeneric('var_dorazio_c')

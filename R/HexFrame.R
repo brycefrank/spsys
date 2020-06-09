@@ -101,6 +101,7 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   crs(new_spdf) <- crs(object)
   
   samp <- HexFrame(new_spdf, attributes=object@attributes, index=keep_ix[,c('r', 'c')])
+  samp@data$TEMP <- NA
   samp@a <- a
   return(samp)
 })

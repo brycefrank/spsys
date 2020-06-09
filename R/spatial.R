@@ -17,52 +17,15 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
-# TODO look at the ...'s, is this correct? Maybe they can
-# be more explicit. For example, contrasts needs to be
-# a vector of 4 elements
-setGeneric('neighborhoods', function(sys_frame, ...) {
-  standardGeneric('neighborhoods')
+
+setGeneric('neighborhoods_non', function(sys_frame, ...) {
+  standardGeneric('neighborhoods_non')
 })
 
-
-setMethod('neighborhoods', signature(sys_frame='RectFrame'), 
-  function(sys_frame, sep, contrasts=NA) {
-    left <- min(sys_frame@data[,'c'])
-    top <-  min(sys_frame@data[,'r'][sys_frame@data[,'c'] == left])
-    
-    # FIXME make this match the HexFrame implementation
-    centers <- subsample(sys_frame, c(top, left), sep)@data[,c('r', 'c')]
-    
-    neighborhoods <- list()
-    for(i in 1:nrow(centers)) {
-      row <- centers[i, 1]
-      col <- centers[i, 2]
-      neighborhood <- matrix(NA, nrow=4, ncol=2)
-      
-      neighborhood[,1] <- c(row, row, row + 1, row + 1)
-      neighborhood[,2] <- c(col, col + 1, col, col + 1)
-      
-      if(length(contrasts) == 4) {
-        neighborhood <- cbind(neighborhood, contrasts)
-      }
-      
-      neighborhood <- data.frame(neighborhood)
-      neighborhood$r <- row
-      neighborhood$c <- col
-      neighborhoods[[i]] <- neighborhood
-    }
-    
-   neighborhoods <- bind_rows(neighborhoods)
-   colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
-   
-   return(neighborhoods)
-  }
-)
-
-setMethod('neighborhoods', signature(sys_frame='HexFrame'), 
-  function(sys_frame, sep, contrasts=NA) {
-    # TODO broken for certain configurations
-    centers <- subsample_hex_ix(sys_frame@data[,c('r', 'c')], c(1,1), sep)
+setMethod('neighborhoods_non', signature(sys_frame='HexFrame'),
+  function(sys_frame) {
+    ix <- sys_frame@data[,c('r', 'c')]
+    centers <- subsample_hex_ix_compact(ix)
     
     neighborhoods <- list()
     for(i in 1:nrow(centers)) {
@@ -73,20 +36,15 @@ setMethod('neighborhoods', signature(sys_frame='HexFrame'),
       neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
       neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
       
-      if(length(contrasts) == 7) {
-        neighborhood <- cbind(neighborhood, contrasts)
-      }
-      
       neighborhood <- data.frame(neighborhood)
       neighborhood$r <- row
       neighborhood$c <- col
       neighborhoods[[i]] <- neighborhood
     }
+    neighborhoods <- bind_rows(neighborhoods)
+    colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
     
-   neighborhoods <- bind_rows(neighborhoods)
-   colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
-   
-   return(neighborhoods)
+    return(neighborhoods)
   }
 )
 
