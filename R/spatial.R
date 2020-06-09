@@ -17,37 +17,6 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
-
-setGeneric('neighborhoods_non', function(sys_frame, ...) {
-  standardGeneric('neighborhoods_non')
-})
-
-setMethod('neighborhoods_non', signature(sys_frame='HexFrame'),
-  function(sys_frame) {
-    ix <- sys_frame@data[,c('r', 'c')]
-    centers <- subsample_hex_ix_compact(ix)
-    
-    neighborhoods <- list()
-    for(i in 1:nrow(centers)) {
-      row <- centers[i, 1]
-      col <- centers[i, 2]
-      neighborhood <- matrix(NA, nrow=7, ncol=2)
-      
-      neighborhood[,1] <- c(row-1, row-1, row, row, row, row+1, row+1)
-      neighborhood[,2] <- c(col-1, col+1, col-2, col, col+2, col-1, col+1)
-      
-      neighborhood <- data.frame(neighborhood)
-      neighborhood$r <- row
-      neighborhood$c <- col
-      neighborhoods[[i]] <- neighborhood
-    }
-    neighborhoods <- bind_rows(neighborhoods)
-    colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
-    
-    return(neighborhoods)
-  }
-)
-
 setGeneric('neighborhood_matrix', function(sys_frame, ...) {
   standardGeneric('neighborhood_matrix')
 })

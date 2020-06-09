@@ -150,3 +150,26 @@ subsample_hex_ix_compact <- function(ix) {
   
   samp_ix
 }
+
+#' Creates a set of indices such that their nearest
+#' neighbors create the overlapping structure
+subsample_hex_ix_ov <- function(ix) {
+  max_r <- max(max(ix$r), 2)
+  max_c <- max(max(ix$c), 6)
+  
+  r_seq <- seq(0, max_r, 2)
+  c_seq <- seq(0, max_c, 6)
+  primary_grid <- expand.grid(r_seq, c_seq)
+  
+  secondary_grid <- primary_grid
+  secondary_grid[,1] <- secondary_grid[,1] + 1
+  secondary_grid[,2] <- secondary_grid[,2] + 3
+  
+  samp_ix <- rbind(primary_grid, secondary_grid)
+  
+  # Bump over to (1,1) origin
+  samp_ix <- samp_ix + 1
+  colnames(samp_ix) <- c('r', 'c')
+  
+  return(samp_ix)
+}
