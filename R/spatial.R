@@ -20,17 +20,18 @@ translate_hex_ix <- function(hex_ix, a) {
 # TODO look at the ...'s, is this correct? Maybe they can
 # be more explicit. For example, contrasts needs to be
 # a vector of 4 elements
-setGeneric('neighborhoods_non', function(sys_frame, ...) {
-  standardGeneric('neighborhoods_non')
+setGeneric('neighborhoods', function(sys_frame, ...) {
+  standardGeneric('neighborhoods')
 })
 
 
-setMethod('neighborhoods_non', signature(sys_frame='RectFrame'), 
-  function(sys_frame, contrasts=NA) {
+setMethod('neighborhoods', signature(sys_frame='RectFrame'), 
+  function(sys_frame, sep, contrasts=NA) {
     left <- min(sys_frame@data[,'c'])
     top <-  min(sys_frame@data[,'r'][sys_frame@data[,'c'] == left])
     
-    centers <- subsample(sys_frame, c(top, left), 2)@data[,c('r', 'c')]
+    # FIXME make this match the HexFrame implementation
+    centers <- subsample(sys_frame, c(top, left), sep)@data[,c('r', 'c')]
     
     neighborhoods <- list()
     for(i in 1:nrow(centers)) {
@@ -58,10 +59,10 @@ setMethod('neighborhoods_non', signature(sys_frame='RectFrame'),
   }
 )
 
-setMethod('neighborhoods_non', signature(sys_frame='HexFrame'), 
-  function(sys_frame, contrasts=NA) {
+setMethod('neighborhoods', signature(sys_frame='HexFrame'), 
+  function(sys_frame, sep, contrasts=NA) {
     # TODO broken for certain configurations
-    centers <- subsample_hex_ix(sys_frame@data[,c('r', 'c')], c(1,1), 3)
+    centers <- subsample_hex_ix(sys_frame@data[,c('r', 'c')], c(1,1), sep)
     
     neighborhoods <- list()
     for(i in 1:nrow(centers)) {
@@ -88,7 +89,6 @@ setMethod('neighborhoods_non', signature(sys_frame='HexFrame'),
    return(neighborhoods)
   }
 )
-
 
 setGeneric('neighborhood_matrix', function(sys_frame, ...) {
   standardGeneric('neighborhood_matrix')

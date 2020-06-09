@@ -187,6 +187,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
     att_df <- sys_frame@data[, atts, drop=FALSE]
     n <- nrow(sys_frame@data)
     
+    # FIXME check if it is appropriate to include the center point of a hexagonal neighborhood
     neighbor_groups <- neighborhoods %>%
       drop_na(c('r', 'c', atts)) %>%
       group_by(r,c)
