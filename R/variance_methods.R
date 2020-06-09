@@ -20,7 +20,6 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
     ssq <- colSums(sweep(att_df, 2, att_means)^2)
     
     var_mu <- (n - 1)^(-1) * n^(-1) * ssq 
-    print(var_mu)
     
     if(fpc) {
       var_mu <- var_mu * (1-n/N)
@@ -78,17 +77,9 @@ setGeneric('var_mat', function(sys_frame, ...) {
   standardGeneric('var_mat')
 })
 
-
-# TODO make sure in documentation that we explain the assumption
-# that points provided to this function are ONLY those points that 
-# are inside Q (which is the study area in Matern's notatio)
-# TODO check appropriateness of FPC
-setMethod('var_mat', signature(sys_frame='HexFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(1,-1, 0, 0, 0, 1, -1)) {
-    # FIXME matern estimator uses a particular kind of neighborhood
-    # that is just "groups" of 4 for RectFrame. Think a little deeper about this 
-    # for hexagonal structures. Maybe 'triangular' neighborhoods? Paralellograms?
-    neighborhoods <- neighborhoods_non(sys_frame, contrasts=contrasts)
+setMethod('var_mat', signature(sys_frame='SysFrame'),
+  function(sys_frame, fpc=FALSE, N=NA_real_) {
+    neighborhoods <- neighborhoods_mat(sys_frame)
     
     # Mean-center the attributes
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
@@ -108,9 +99,6 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     in_Q <- neighborhoods %>%
       replace_na(zero_list)
     
-    # We have to rename 'contrasts' column to avoid a bug
-    colnames(in_Q)[[3]] <- 'contr'
-    
     q <- 9
     n <- nrow(sys_frame@data)
     
@@ -126,43 +114,6 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
   }
 )
 
-setMethod('var_mat', signature(sys_frame='RectFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, contrasts = c(1, -1, 1, -1)) {
-    # FIXME matern estimator uses a particular kind of neighborhood
-    # that is just "groups" of 4. Probably worth its own method
-    neighborhoods <- neighborhoods_non(sys_frame)
-    
-    # Mean-center the attributes
-    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
-    att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
-    d_ct <- cbind(sys_frame@data[,c('r', 'c')], att_ct)
-    neighborhoods <- merge(neighborhoods, d_ct, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
-    
-    # Get the number of neighborhoods with at least one point in Q
-    p <- length(colnames(att_df))
-    
-    # Set the NA values of neighborhood attributes (i.e. they are out of the area) 
-    # to zero if they are
-    zero_list <- as.list(rep(0,p))
-    names(zero_list) <- colnames(att_df)
-    in_Q <- neighborhoods %>%
-      replace_na(zero_list)
-    
-    q <- 9
-    n <- nrow(sys_frame@data)
-    
-    # A function that generates the T value for each neighborhood
-    summ_df <- function(x) {return(sum(x * in_Q$contrasts)^2  / 4)}
-    
-    Ti <- in_Q %>%
-      group_by(r, c) %>%
-      mutate_at(.vars=colnames(att_df), .funs=function(x){return(x*contrasts)}) %>%
-      summarize_at(.vars=colnames(att_df), .funs=function(x){return(sum(x)^2/4)})
-    
-    var <- (q * sum(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
-    return(var)
-  }
-)
 
 #' Calculate the variance using a denominator of n
 #' instead of n-1
@@ -182,60 +133,70 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
   standardGeneric('var_non_overlap')
 })
 
-setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
+setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_) {
     nbh <- neighborhoods_non(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
-    return(nbh)
+    atts <- sys_frame@attributes
+    att_df <- sys_frame@data[, atts, drop=FALSE]
+    n <- nrow(sys_frame@data)
+    
+    neighbor_groups <- nbh %>%
+      drop_na(c('r', 'c', atts)) %>%
+      group_by(r,c)
+    
+    N_neighbs <- neighbor_groups %>%
+      summarize(n=n()) %>%
+      nrow()
+    
+    # Prepare a vector specifying the pop variance function for each attribute
+    p <- length(colnames(att_df))
+    funs <- rep('pop_var', p)
+    
+    q <- neighbor_groups %>%
+      summarize(q_j=n())
+    
+    # TODO some neighborhoods return a 0 variance
+    var_non <- neighbor_groups %>%
+      summarize_at(.vars = atts, pop_var) %>%
+      merge(q) %>%
+      mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
+      mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
+      mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
+      summarize_at(.vars = colnames(att_df), .funs=~sum(.))
+    
+    return(var_non)
   }
 )
-
-#setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'), 
-#  function(sys_frame, fpc=FALSE, N=NA_real_) {
-#    neighborhoods <- neighborhoods(sys_frame, sep=)
-#    neighborhoods <- merge(neighborhoods, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
-#    atts <- sys_frame@attributes
-#    att_df <- sys_frame@data[, atts, drop=FALSE]
-#    n <- nrow(sys_frame@data)
-#    
-#    # FIXME check if it is appropriate to include the center point of a hexagonal neighborhood
-#    neighbor_groups <- neighborhoods %>%
-#      drop_na(c('r', 'c', atts)) %>%
-#      group_by(r,c)
-#    
-#    N_neighbs <- neighbor_groups %>%
-#      summarize(n=n()) %>%
-#      nrow()
-#    
-#    # Prepare a vector specifying the pop variance function for each attribute
-#    p <- length(colnames(att_df))
-#    funs <- rep('pop_var', p)
-#    
-#    q <- neighbor_groups %>%
-#      summarize(q_j=n())
-#    
-#    # TODO some neighborhoods return a 0 variance
-#    var_non <- neighbor_groups %>%
-#      summarize_at(.vars = atts, pop_var) %>%
-#      merge(q) %>%
-#      mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
-#      mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
-#      mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
-#      summarize_at(.vars = colnames(att_df), .funs=~sum(.))
-#    
-#    return(var_non)
-#  }
-#)
-
 
 setGeneric('var_overlap', function(sys_frame, ...) {
   standardGeneric('var_overlap')
 })
 
-setMethod('var_overlap', signature(sys_frame = 'HexFrame'),
+mse <- function(x) {
+  m <- length(x)
+  x_bar <- mean(x)
+  (1/m) * sum((x - x_bar)^2)
+}
+
+setMethod('var_overlap', signature(sys_frame = 'SysFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_) {
+    nbh <- neighborhoods_non(sys_frame)
+    nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
+    atts <- sys_frame@attributes
+    att_df <- sys_frame@data[, atts, drop=FALSE]
+    n <- nrow(sys_frame@data)
+    
+    neighbor_groups <- nbh %>%
+      drop_na(c('r', 'c', atts)) %>%
+      group_by(r,c)
+    
+    grp_vars <- neighbor_groups %>%
+      summarize_at(.vars = atts, .funs=~mse(.))
+    
+    (1/n^2) * colSums(grp_vars[,atts])
   }
 )
 

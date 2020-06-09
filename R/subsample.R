@@ -88,7 +88,7 @@ index_sq <- function(square_polys) {
   
 }
 
-# TODO just make this a method
+# TODO just make this a method?
 subsample_hex_ix <- function(hex_ix, start_pos, a) {
   max_r <- max(hex_ix$r)
   max_c <- max(hex_ix$c)
@@ -130,7 +130,6 @@ subsample_hex_ix_compact <- function(ix) {
   
   samp_ix <- list()
   
-  browser()
   # Make a grid for each row
   for(j in 0:14) {
     col_shift <- -j * 5
@@ -172,4 +171,19 @@ subsample_hex_ix_ov <- function(ix) {
   colnames(samp_ix) <- c('r', 'c')
   
   return(samp_ix)
+}
+
+subsample_rect_ix <- function(ix, start_pos, a) {
+  max_r <- max(ix$r)
+  max_c <- max(ix$c)
+  
+  r_start <- start_pos[[1]]
+  c_start <- start_pos[[2]]
+  
+  r_seq <- seq(r_start, max_r, a)
+  c_seq <- seq(c_start, max_c, a)
+  
+  a_grid <- expand.grid(r_seq, c_seq)
+  colnames(a_grid) <- c('r', 'c')
+  return(a_grid)
 }
