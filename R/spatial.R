@@ -17,6 +17,7 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
+# TODO maybe 'proximity' matrix is more clear, refactor
 setGeneric('neighborhood_matrix', function(sys_frame, ...) {
   standardGeneric('neighborhood_matrix')
 })
@@ -62,8 +63,9 @@ setMethod('gearys_c', signature(sys_frame='SysFrame'),
       numerator <- numerator + e_ij
     }
     
-    denominator <- 2 * sum(W) * colSums(((att_df - colMeans(att_df))^2))
+    denominator <- 2 * sum(W) * colSums((sweep(att_df, 2, colMeans(att_df))^2))
     C <- ((n-1) * numerator) / denominator
+    C <- as.vector(C)
     
     return(C)
   }
@@ -93,8 +95,9 @@ setMethod('morans_i', signature(sys_frame='SysFrame'),
       numerator <- numerator + e_ij
     }
     
-    denominator <- colSums(((att_df - colMeans(att_df))^2))
+    denominator <- colSums(((sweep(att_df, 2, colMeans(att_df)))^2))
     morans_I <- (n / sum(W)) * (numerator / denominator)
+    morans_I <- as.vector(morans_I)
     
     return(morans_I)
   }
