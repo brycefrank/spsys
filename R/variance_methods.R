@@ -7,7 +7,7 @@ setGeneric('var_srs', function(sys_frame, ...) {
 })
 
 setMethod('var_srs', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
     if(fpc == TRUE & is.na(N)) {
       stop('If fpc is set to true you must provide a population size N.')
     }
@@ -23,6 +23,8 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
     if(fpc) {
       var_mu <- var_mu * (1-n/N)
     }
+    
+    var_mu <- VarOut(var_mu, n, N, diagnostic)
     return(var_mu)
   }
 )
@@ -76,9 +78,8 @@ setGeneric('var_mat', function(sys_frame, ...) {
   standardGeneric('var_mat')
 })
 
-# FIXME is FPC appropriate for these?
 setMethod('var_mat', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
     neighborhoods <- neighborhoods_mat(sys_frame)
     
     # Mean-center the attributes
@@ -115,6 +116,8 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
       var_mat <- (1-n/N) * var_mat
     }
     
+    var_mat <- NbhOut(var_mat, Ti, n, N, diagnostic)
+    
     return(var_mat)
   }
 )
@@ -140,7 +143,7 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
 
 # FIXME is FPC appropriate for these?
 setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
     nbh <- neighborhoods_non(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
@@ -163,18 +166,21 @@ setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
       summarize(q_j=n())
     
     # TODO some neighborhoods return a 0 variance
-    var_non <- neighbor_groups %>%
+    nbh_var <- neighbor_groups %>%
       summarize_at(.vars = atts, pop_var) %>%
       merge(q) %>%
       mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
       mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
-      mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs)) %>%
+      mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs))
+    
+    var_non <- nbh_var %>%
       summarize_at(.vars = colnames(att_df), .funs=~sum(.))
     
     if(fpc) {
       var_non <- (1-n/N) * var_non
     }
     
+    var_non <- NbhOut(var_non, nbh_var, n, N, diagnostic)
     return(var_non)
   }
 )
@@ -193,8 +199,7 @@ mse <- function(x) {
 # to match the Aune-Lundberg description. Wait to see how it does for
 # other populations / RectFrames before going further.
 setMethod('var_overlap', signature(sys_frame = 'SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_) {
-    browser()
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
     nbh <- neighborhoods_ov(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
@@ -214,6 +219,8 @@ setMethod('var_overlap', signature(sys_frame = 'SysFrame'),
       var_ov <- (1-n/N) * var_ov
     }
     
+    var_ov <- as.data.frame(t(var_ov))
+    var_ov <- NbhOut(var_ov, grp_vars, n, N, diagnostic)
     return(var_ov)
     
   }

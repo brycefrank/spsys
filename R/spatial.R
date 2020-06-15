@@ -17,6 +17,19 @@ translate_hex_ix <- function(hex_ix, a) {
   return(data.frame(r_t , c_t))
 }
 
+
+setGeneric('distance_matrix', function(sys_frame, ...) {
+  standardGeneric('distance_matrix')
+})
+
+setMethod('distance_matrix', signature(sys_frame='SysFrame'),
+  function(sys_frame) {
+    D <- Dist(sys_frame@coords)
+    diag(D) <- 0
+    return(W)
+  }
+)
+
 # TODO maybe 'proximity' matrix is more clear, refactor
 setGeneric('neighborhood_matrix', function(sys_frame, ...) {
   standardGeneric('neighborhood_matrix')
