@@ -116,7 +116,7 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
       var_mat <- (1-n/N) * var_mat
     }
     
-    var_mat <- NbhOut(var_mat, Ti, n, N, diagnostic)
+    var_mat <- NbhOut(var_mat, Ti, n, N, 'var_mat', diagnostic)
     
     return(var_mat)
   }
@@ -143,7 +143,7 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
 
 # FIXME is FPC appropriate for these?
 setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=TRUE) {
     nbh <- neighborhoods_non(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
@@ -180,7 +180,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
       var_non <- (1-n/N) * var_non
     }
     
-    var_non <- NbhOut(var_non, nbh_var, n, N, diagnostic)
+    var_non <- NbhOut(var_non, nbh_var, n, N, 'var_non_overlap', diagnostic)
     return(var_non)
   }
 )
@@ -220,7 +220,7 @@ setMethod('var_overlap', signature(sys_frame = 'SysFrame'),
     }
     
     var_ov <- as.data.frame(t(var_ov))
-    var_ov <- NbhOut(var_ov, grp_vars, n, N, diagnostic)
+    var_ov <- NbhOut(var_ov, grp_vars, n, N, 'var_overlap', diagnostic)
     return(var_ov)
     
   }
