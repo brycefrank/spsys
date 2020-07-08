@@ -1,5 +1,6 @@
 # Variance estimators in method form
 library(spsurvey)
+library(sptotal)
 library(tidyr)
 
 setGeneric('var_srs', function(sys_frame, ...) {
@@ -38,7 +39,7 @@ setGeneric('var_so', function(sys_frame, ...){
 })
 
 setMethod('var_so', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE, coord_cols=NA, nbh=4) {
     # TODO this should not strictly be needed
     if(is.na(N)) {
       stop('var_so requires a population size N')
@@ -54,7 +55,15 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
       pi_i <- sys_frame@data$pi_i
     }
     
-    wt <- localmean.weight(sys_frame@coords[,1], sys_frame@coords[,2], pi_i)
+    # TODO check for bad inputs
+    # FIXME this issues a warning if coord_cols is a vector of colnames
+    if(!is.na(coord_cols)) {
+      coords <- sys_frame@data[,coord_cols]
+    } else {
+      coords <- sys_frame@coords
+    }
+    
+    wt <- localmean.weight(coords[,1], coords[,2], pi_i, nbh=nbh)
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
     var_total <- sapply(colnames(att_df), so_att, att_df, pi_i, wt)
     
@@ -79,9 +88,16 @@ setGeneric('var_mat', function(sys_frame, ...) {
 })
 
 setMethod('var_mat', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
-    neighborhoods <- neighborhoods_mat(sys_frame)
-    
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE, nbh='mat') {
+    if(nbh=='mat') {
+      neighborhoods <- neighborhoods_mat(sys_frame)
+      h <- 4
+      q <- 4 # Number of elements per neighborhood
+    } else if(nbh=='hex') {
+      neighborhoods <- neighborhoods_non(sys_frame)
+      h <- 9
+      q <- 7
+    }
     # Mean-center the attributes
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
     att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
@@ -100,11 +116,10 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
     in_Q <- neighborhoods %>%
       replace_na(zero_list)
     
-    q <- 4
     n <- nrow(sys_frame@data)
     
     # A function that generates the T value for each neighborhood
-    get_Ti <- function(x, contr) {return(sum(x * contr)^2  / 4)}
+    get_Ti <- function(x, contr) {return(sum(x * contr)^2  / h)}
     
     Ti <- in_Q %>%
       group_by(r, c) %>%
@@ -116,6 +131,7 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
       var_mat <- (1-n/N) * var_mat
     }
     
+    var_mat <- data.frame(t(var_mat))
     var_mat <- NbhOut(var_mat, Ti, n, N, 'var_mat', diagnostic)
     
     return(var_mat)
@@ -142,11 +158,62 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
 })
 
 # FIXME is FPC appropriate for these?
-setMethod('var_non_overlap', signature(sys_frame = 'SysFrame'),
+setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=TRUE) {
     nbh <- neighborhoods_non(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
+    atts <- sys_frame@attributes
+    att_df <- sys_frame@data[, atts, drop=FALSE]
+    n <- nrow(sys_frame@data)
+    
+    neighbor_groups <- nbh %>%
+      drop_na(c('r', 'c', atts)) %>%
+      group_by(r,c)
+    
+    N_neighbs <- neighbor_groups %>%
+      summarize(n=n()) %>%
+      nrow()
+    
+    # Prepare a vector specifying the pop variance function for each attribute
+    p <- length(colnames(att_df))
+    
+    q <- neighbor_groups %>%
+      summarize(q_j=n())
+    
+    # TODO some neighborhoods return a 0 variance
+    nbh_var <- neighbor_groups %>%
+      summarize_at(.vars = atts, pop_var) %>%
+      merge(q) %>%
+      mutate(N_j = q_j * sys_frame@a^2) %>% # TODO is there someway to specify this without a?
+      mutate(w_j_sq = (N_j / n)^2, fpc = ((N_j - q_j) / N_j)) %>%
+      mutate_at(.vars = colnames(att_df), .funs=~weight_var(., q_j, fpc, N_neighbs))
+    
+    var_non <- nbh_var %>%
+      summarize_at(.vars = colnames(att_df), .funs=~sum(.))
+    
+    if(fpc) {
+      var_non <- (1-n/N) * var_non
+    }
+    
+    var_non <- NbhOut(var_non, nbh_var, n, N, 'var_non_overlap', diagnostic)
+    return(var_non)
+  }
+)
+
+setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
+  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=TRUE) {
+    if(nbh=='tri') {
+      nbh <- neighborhoods_tri(sys_frame)
+    } else if(nbh=='hex') {
+      nbh <- neighborhoods_non(sys_frame)
+    } else if(nbh=='mat') {
+      nbh <- neighborhoods_mat(sys_frame)
+    } else {
+      stop('Please specify a neighborhood structure - either "tri", "hex" or "mat"')
+    }
+    
+    nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     atts <- sys_frame@attributes
     att_df <- sys_frame@data[, atts, drop=FALSE]
     n <- nrow(sys_frame@data)
@@ -234,8 +301,8 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 
 # FIXME does not work for multiple variables
 setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
-  function(sys_frame, fpc=FALSE, N=NA_real_, order=1) {
-    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
+  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=TRUE) {
+    v_srs <- var_srs(sys_frame, fpc=fpc, N=N, diagnostic=FALSE)
     C <- gearys_c(sys_frame, order=order)
     var_c <- v_srs * C
     n <- nrow(sys_frame@data)
@@ -252,18 +319,48 @@ setGeneric('var_dorazio_i', function(sys_frame, ...) {
 # TODO this seems to consistently underestimate most of the variables
 # but seems to be fine for uncorrelated. Could just be a poor estimator *shrug*
 setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'), 
-  function(sys_frame, fpc=FALSE, N=NA_real_, order=1) {
-    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
+  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=TRUE) {
+    v_srs <- var_srs(sys_frame, fpc=fpc, N=N, diagnostic=FALSE)
     morans_I <- morans_i(sys_frame, order=order)
     n <- nrow(sys_frame@data)
     p <- length(sys_frame@attributes)
     
     w <- rep(1, p)
     
-    gt0 <- morans_I[morans_I > 0]
-    w[morans_I > 0]  <- 1 + (2/log(gt0)) + (2/(1/gt0 - 1))
+    gt0 <- morans_I > 0
+    gt0[is.na(gt0)] <- FALSE
+    
+    w[gt0]  <- 1 + (2/log(morans_I[gt0])) + (2/(1/morans_I[gt0] - 1))
     var_i <- v_srs * w
     
     return(var_i)
+  }
+)
+
+setGeneric('var_fpbk', function(sys_frame, pop_frame, ...) {
+  standardGeneric('var_fpbk')
+})
+
+setMethod('var_fpbk', signature(sys_frame='SysFrame', pop_frame='SysFrame'),
+  function(sys_frame, pop_frame, diagnostic=TRUE) {
+    N <- nrow(pop_frame@data)
+    
+    not_in_sample <- row.names(pop_frame@data)[!row.names(pop_frame@data) %in% row.names(sys_frame@data)]
+    slm_df <- pop_frame@data
+    slm_df[not_in_sample, sys_frame@attributes] <- NA
+    slm_df$x <- pop_frame@coords[,1]
+    slm_df$y <- pop_frame@coords[,2]
+    
+    vars <- c()
+    for(att in sys_frame@attributes) {
+      form <- formula(paste(att, '~1'))
+      slm <- slmfit(form, data=slm_df, xcoordcol='x', ycoordcol='y')
+      slm_pred <- predict(slm)
+      tot_var <- slm_pred$PredVar
+      var_mu <- tot_var * (1/N^2)
+      vars <- c(vars, var_mu)
+    }
+    
+    return(vars)
   }
 )

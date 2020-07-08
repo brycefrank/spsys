@@ -76,6 +76,11 @@ setMethod('gearys_c', signature(sys_frame='SysFrame'),
       numerator <- numerator + e_ij
     }
     
+    # If all elements are 0 then C will be equal to 1 for all attributes
+    if(sum(numerator == 0) == p) {
+      return(rep(1, p))
+    }
+    
     denominator <- 2 * sum(W) * colSums((sweep(att_df, 2, colMeans(att_df))^2))
     C <- ((n-1) * numerator) / denominator
     C <- as.vector(C)

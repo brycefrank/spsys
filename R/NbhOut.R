@@ -15,6 +15,7 @@ NbhOut <- function(estimate, neighborhoods, n, N, name, diagnostic) {
     nbh_out <- new('NbhOut')
     nbh_out@estimate <- estimate
     nbh_out@neighborhoods <- neighborhoods
+    nbh_out@n_groups <- nrow(neighborhoods)
     nbh_out@n <- n
     nbh_out@N <- N
     nbh_out@name <- name
