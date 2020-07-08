@@ -17,13 +17,14 @@
 
 setClass('HexFrame', contains='SysFrame',
          slots = list(
-           a='numeric'
+           a='numeric',
+           N='numeric'
          ))
 
 # TODO not sure why this needs to be repeated from sysframe
 # is it possible to do something like callNextMethod but for
 # instantiation?
-HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE, a=1) {
+HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE, a=1, N=Inf) {
   sys_frame <- SysFrame(splydf, attributes)
   
   hex_frame <- new('HexFrame')
@@ -32,6 +33,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE,
   hex_frame@proj4string <- sys_frame@proj4string
   hex_frame@coords <- sys_frame@coords
   hex_frame@attributes <- sys_frame@attributes
+  hex_frame@N <- N
   
   
   # TODO make this condition a bit cleaner

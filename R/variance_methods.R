@@ -1,4 +1,3 @@
-# Variance estimators in method form
 library(spsurvey)
 library(sptotal)
 library(tidyr)
@@ -8,12 +7,16 @@ setGeneric('var_srs', function(sys_frame, ...) {
 })
 
 setMethod('var_srs', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
-    if(fpc == TRUE & is.na(N)) {
-      stop('If fpc is set to true you must provide a population size N.')
+  function(sys_frame, fpc=FALSE, diagnostic=TRUE) {
+    N <- sys_frame@N
+    
+    if(fpc == TRUE & N==Inf) {
+      stop('If fpc is set to true you must provide a finite population size N.')
     }
     
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    
+    
     n <- length(sys_frame)
     
     att_means <- colMeans(att_df)
@@ -25,6 +28,7 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
       var_mu <- var_mu * (1-n/N)
     }
     
+    var_mu <- data.frame(var_mu)
     var_mu <- VarOut(var_mu, n, N, diagnostic)
     return(var_mu)
   }
@@ -32,16 +36,15 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
 
 #' Computes the variance estimate of a systematic 
 #' sample using the Stevens and Olsen (2003) local mean estimator.
-#' 
-#' This is a wrapper for functions that exist in `spsurvey`
 setGeneric('var_so', function(sys_frame, ...){
   standardGeneric('var_so')
 })
 
 setMethod('var_so', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE, coord_cols=NA, nbh=4) {
+  function(sys_frame, fpc=FALSE, diagnostic=TRUE, coord_cols=NA, nbh=4) {
     # TODO this should not strictly be needed
-    if(is.na(N)) {
+    N <- sys_frame@N
+    if(N==Inf) {
       stop('var_so requires a population size N')
     }
     
@@ -160,6 +163,7 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
 # FIXME is FPC appropriate for these?
 setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=TRUE) {
+    # TODO implement a check for nbh for RectFrames (Should only take mat)
     nbh <- neighborhoods_non(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
@@ -299,7 +303,6 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 })
 
 
-# FIXME does not work for multiple variables
 setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=TRUE) {
     v_srs <- var_srs(sys_frame, fpc=fpc, N=N, diagnostic=FALSE)

@@ -22,21 +22,24 @@ For example, we can load in a set of points from a hexagonal grid:
 ```{r}
 
 hex_points <- readOGR('my_hex_points.shp')
-hex_frame <- HexFrame(hex_points, c('vol', 'ba'))
+hex_frame <- HexFrame(hex_points, c('vol', 'ba'), N=10000)
 ```
 
-`HexFrame` takes two arguments: a `SpatialPointsDataFrame` and a vector of column names that indicate attributes we are interested in conducting the analyses on. Here we indicate volume (vol) and basal area (ba) as our attributes of interest. `HexFrame`, and its sister class `RectFrame` (for rectangular systematic samples), implement a standard interface upon which variance estimators can be constructed.
+`HexFrame` takes two arguments: a `SpatialPointsDataFrame` and a vector of column names that indicate attributes we are interested in conducting the analyses on. Here we indicate volume (vol) and basal area (ba) as our attributes of interest, and we indicate that the population size is `N=10000`. `HexFrame`, and its sister class `RectFrame` (for rectangular systematic samples), implement a standard interface upon which variance estimators can be constructed.
 
 ### Estimating Variances
 
-Given a `HexFrame` or `RectFrame` that represents a sample of the study area, it is elementary to estimate variances using a host of available estimators. For starters we can estimate the variance assuming simple random sampling without replacement. Assume the population size is equal to 10,000. We obtain
+Once we have wrapped our sample information within a `HexFrame` or `RectFrame`, the next step is to construct a variance estimator. For example, we can construct a variance estimator that assumes simple random sampling was conducted, as is common practice for many environmental sample surveys.
 
 ```
-N <- 10000
-var_srs(hex_frame, N=N, fpc=TRUE)
+my_srs_estimator <- VarSRS(fpc=TRUE, diagnostic=TRUE)
 ```
 
-Please see the vignette for formal descriptions of the variance estimators, their required arguments and other relavent details.
+`my_srs_estimator` now represents a function that, when we pass this function a `HexFrame` or `RectFrame`, will return the variance estimate along with other diagnostic information.
+
+```
+my_srs_estimator(hex_frame)
+```
 
 ### Variance Assessment
 

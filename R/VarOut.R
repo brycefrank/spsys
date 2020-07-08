@@ -5,7 +5,6 @@ setClass('VarOut', slots = list(
   N = 'numeric'
 ))
 
-
 VarOut <- function(estimate, n, N, diagnostic) {
   if(diagnostic) {
     var_out <- new('VarOut')
