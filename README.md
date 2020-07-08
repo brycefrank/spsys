@@ -43,9 +43,9 @@ my_srs_estimator(hex_frame)
 
 ### Variance Assessment
 
-`sys` provides two ways to assess the behavior of variance estimators: via synthetic populations and via subsampling.
+(TODO - make this a page instead of part of the README)
 
-One way to assess the performance of variance estimators is to treat an existing `SysFrame` as a population, and subsample repeatedly from it. `sys` enables subsampling using the following
+`spsys` allows for the assessment the behavior of variance estimators via simulation. This is done by treating an existing `SysFrame` as a population, and sampling repeatedly from it. Consider the following example where we treat `hex_frame` as a population
 
 ```{r}
 a <- 3
@@ -65,7 +65,7 @@ all_starts <- subsample_starts(a)
 
 for(i in 1:nrow(all_starts)) {
   subsample(hex_frame, all_starts[i,]) %>%
-    var_srs(fpc=FALSE)
+    var_srs(fpc=)
 }
 ```
 
