@@ -1,0 +1,67 @@
+---
+output: 
+  pdf_document:
+    keep_tex: true
+    fig_caption: true
+    latex_engine: pdflatex
+    template: ./svm-latex-ms.tex
+title: "Estimation of Sampling Variance for Systematic Sampling Surveys with spsys"
+author:
+- name: Bryce Frank
+  affiliation: Oregon State University
+- name: Vicente Monleon
+  affiliation: United States Forest Service
+abstract: 
+  "Two-dimensional systematic sampling designs are common for environmental sample surveys. However, estimation of the sampling variance for these designs remains   a challenge, with many potential solutions proposed in the literature. `spsys` provides implementations of variance estimators of the sampling     variance of surveys that use systematic sampling designs. We provide descriptions of these estimators and explain how to implement them in         `spsys`. We examine the performance of the available estimators on a simulated dataset included with the package."
+keywords: "systematic sampling, variance estimation"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+bibliography: ./main.bib
+#fontfamily: mathpazo
+#fontsize: 11pt
+# spacing: double
+#biblio-style: apsr
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+Systematic sampling designs are commonly used in design-based environmental sampling surveys. Systematic and quasi-systematic sampling designs can provide more efficient point estimates of environmental parameters of interest than alternatives such as simple random sampling in many contexts [e.g. @dunn_two-dimensional_1993; @aune-lundberg_comparison_2014]. However, the estimate of the precision of these point estimates, i.e. the estimation of the sampling variance itself, is a difficult task. 
+
+Frequently, many surveys use a variance estimator derived from the assumption of simple random sampling which provides conservative, i.e. positively biased, estimates of the sampling variance in many situations [cite]. Therefore the efficiency gains that are often a product of systematic designs are lost in the communication of results from surveys of this type. This can have implications for planning future surveys. For example, if an estimate of the sampling variance is used to inform the selection of a sample size to meet a given level of precision for a future survey, then the selected sample size may be too large, incurring unnecessary costs that manifest in the data collection process. 
+
+Fortunately, several alternative estimators have been proposed in the sampling literature that have been shown in various studies to provide improvements over the "default" simple random sampling estimator [e.g. a few things]. However, these studies are not always consistent in their results suggesting that, among these alternative estimators, an analyst should entertain several of them under hypothetical populations, and select the one that performs best under this assumed population.
+
+While many alternative estimators exist, we are not aware of any software package that aggregates these estimators under a unified framework. While not exhaustive, `spsys` `provides a number of these alternative estimators, along with standardized inputs and outputs that enable comparison of their behavior under assumed populations. This vignette describes how to implement the variance estimators. Formal definitions of the variance estimators are provided in a separate vignette [link].
+
+# Estimation of the Sampling Variance
+
+## Creating a `SysFrame` Object
+
+The entry point into `spsys` is achieved by creating a `SysFrame` object. This object contains information about the spatial positions of the data, and their response variables of interest. Users are able to define one of two particular implementations of the `SysFrame` which include the `HexFrame` and the `RectFrame`. The `HexFrame` represents a systematic sample arranged in a hexagonal grid and the `RectFrame` represents a systematic sample arranged in a rectangular grid. We will consider a `RectFrame` for the remainder of this vignette, but the functionality for the `HexFrame` is nearly identical.
+
+`SysFrame` and its child classes accept a `SpatialPointsDataFrame` from the `sp` package as its first argument. The `@coords` slot of this object should represent the sample positions and the `@data` slot should represent a table of attributes for each sample position that has the desired response variables in each column.
+
+Included with `spsys` is a simulated dataset arranged in a rectangular grid called `rect_pts`. It is stored as a `SpatialPointsDataFrame`. We can load the dataset and inspect its properties
+
+```{r eval=FALSE}
+
+
+
+```
+
+
+
+## Creating and Using a `VarEst` Object
+
+`spsys` requires users to create a `VarEst` object, which represents a variance estimation function. This allows the specified variance estimator to be transferred easily to different populations if desired.
+
+
+
+\newpage
+
+## References
