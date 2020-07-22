@@ -20,6 +20,7 @@ Collate:
     'VarEst.R'
     'assessment.R'
     'cast_hex.R'
+    'data.R'
     'neighborhoods.R'
     'spatial.R'
     'variance_methods.R'

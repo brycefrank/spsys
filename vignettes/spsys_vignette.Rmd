@@ -4,7 +4,7 @@ output:
     keep_tex: true
     fig_caption: true
     latex_engine: pdflatex
-    template: ./svm-latex-ms.tex
+    template: ./RJtemplate.tex
 title: "Estimation of Sampling Variance for Systematic Sampling Surveys with spsys"
 author:
 - name: Bryce Frank

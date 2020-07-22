@@ -2,7 +2,6 @@ library(sp)
 #library(rgdal)
 library(raster)
 library(dplyr)
-library(maptools)
 
 
 #' Create a hexagon grid for an input set of plots

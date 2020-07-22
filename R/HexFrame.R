@@ -46,12 +46,12 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE,
   hex_frame <- hex_frame[complete.cases(hex_frame@data[,c('r', 'c')]),]
   
   # Ensure the rows start from 1 and the columns start from 1
-  min_r <- min(hex_frame@data$r)
   min_c <- min(hex_frame@data$c)
+  min_r <- min(hex_frame@data$r)
   
   
   hex_frame@data$r <- hex_frame@data$r - min_r + 1
-  
+  min_r_new <- min(hex_frame@data$r)
   # For columns, if the min_r and min_c "disagree" we have a 'beta'
   # configured index set, and need to bump the columns over by one index
   if (min_r %% 2 == 0 & min_c %% 2!=0) {
@@ -59,7 +59,16 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE,
   } else if (min_r %% 2 !=0 & min_c %% 2 == 0) {
     hex_frame@data$c <- hex_frame@data$c - min_c + 2
   } else {
-    hex_frame@data$c <- hex_frame@data$c - min_c + 1
+    # In some cases the grid is still misaligned from the standard set
+    # and that is checked for here and corrected.
+    min_c_at_min_r <- min(hex_frame@data$c[hex_frame@data$r == min_r_new])
+    if(min_c %%2 == 0 & min_c_at_min_r %% 2 != 0) {
+      hex_frame@data$c <- hex_frame@data$c - min_c + 2
+    } else if (min_c %% 2 !=0 & min_c_at_min_r %% 2 == 0) {
+      hex_frame@data$c <- hex_frame@data$c - min_c + 2
+    } else {
+      hex_frame@data$c <- hex_frame@data$c - min_c + 1
+    }
   }
 
   hex_frame

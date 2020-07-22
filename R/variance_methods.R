@@ -7,9 +7,8 @@ setGeneric('var_srs', function(sys_frame, ...) {
 })
 
 setMethod('var_srs', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, diagnostic=TRUE) {
+  function(sys_frame, fpc=FALSE, diagnostic=FALSE) {
     N <- sys_frame@N
-    
     if(fpc == TRUE & N==Inf) {
       stop('If fpc is set to true you must provide a finite population size N.')
     }
@@ -34,6 +33,29 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
   }
 )
 
+setGeneric('var_sys', function(sys_frame, ...){
+  standardGeneric('var_sys')
+})
+
+setMethod('var_sys', signature(sys_frame='SysFrame'),
+  function(sys_frame, a, diagnostic=FALSE) {
+    starts <- subsample_starts(sys_frame, a)
+    K <- nrow(starts)
+    mu <- colMeans(sys_frame@data[,sys_frame@attributes])
+    sse <- 0
+    
+    for(k in 1:K) {
+      sub <- subsample(sys_frame, starts[k,], a)
+      mu_hat <- colMeans(sub@data[,sys_frame@attributes])
+      sq_err <- (mu - mu_hat)^2
+      sse <- sse + sq_err
+    }
+    
+    return(1/K * sse)
+    
+  }
+)
+
 #' Computes the variance estimate of a systematic 
 #' sample using the Stevens and Olsen (2003) local mean estimator.
 setGeneric('var_so', function(sys_frame, ...){
@@ -41,7 +63,7 @@ setGeneric('var_so', function(sys_frame, ...){
 })
 
 setMethod('var_so', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, diagnostic=TRUE, coord_cols=NA, nbh=4) {
+  function(sys_frame, fpc=FALSE, diagnostic=FALSE, coord_cols=NA, nbh=4) {
     # TODO this should not strictly be needed
     N <- sys_frame@N
     if(N==Inf) {
@@ -91,7 +113,7 @@ setGeneric('var_mat', function(sys_frame, ...) {
 })
 
 setMethod('var_mat', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE, nbh='mat') {
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE, nbh='mat') {
     if(nbh=='mat') {
       neighborhoods <- neighborhoods_mat(sys_frame)
       h <- 4
@@ -101,6 +123,9 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
       h <- 9
       q <- 7
     }
+    
+    N <- sys_frame@N
+    
     # Mean-center the attributes
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
     att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
@@ -162,7 +187,7 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
 
 # FIXME is FPC appropriate for these?
 setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=TRUE) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=FALSE) {
     # TODO implement a check for nbh for RectFrames (Should only take mat)
     nbh <- neighborhoods_non(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
@@ -206,7 +231,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
 )
 
 setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=TRUE) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=FALSE) {
     if(nbh=='tri') {
       nbh <- neighborhoods_tri(sys_frame)
     } else if(nbh=='hex') {
@@ -216,7 +241,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
     } else {
       stop('Please specify a neighborhood structure - either "tri", "hex" or "mat"')
     }
-    
+    N <- sys_frame@N
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     atts <- sys_frame@attributes
     att_df <- sys_frame@data[, atts, drop=FALSE]
@@ -270,7 +295,7 @@ mse <- function(x) {
 # to match the Aune-Lundberg description. Wait to see how it does for
 # other populations / RectFrames before going further.
 setMethod('var_overlap', signature(sys_frame = 'SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=TRUE) {
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE) {
     nbh <- neighborhoods_ov(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
@@ -304,8 +329,8 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 
 
 setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
-  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=TRUE) {
-    v_srs <- var_srs(sys_frame, fpc=fpc, N=N, diagnostic=FALSE)
+  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=FALSE) {
+    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
     C <- gearys_c(sys_frame, order=order)
     var_c <- v_srs * C
     n <- nrow(sys_frame@data)
@@ -322,8 +347,8 @@ setGeneric('var_dorazio_i', function(sys_frame, ...) {
 # TODO this seems to consistently underestimate most of the variables
 # but seems to be fine for uncorrelated. Could just be a poor estimator *shrug*
 setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'), 
-  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=TRUE) {
-    v_srs <- var_srs(sys_frame, fpc=fpc, N=N, diagnostic=FALSE)
+  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=FALSE) {
+    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
     morans_I <- morans_i(sys_frame, order=order)
     n <- nrow(sys_frame@data)
     p <- length(sys_frame@attributes)
