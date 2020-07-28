@@ -42,7 +42,6 @@ test_that('VarSO runs as expected', {
   expect_equal(round(diagn@mu[[1]], 2), 1.19)
 })
 
-
 test_that('VarSYS runs as expected', {
   v <- VarSYS(hf, a = 2)
   est <- v(hf)[[1]]

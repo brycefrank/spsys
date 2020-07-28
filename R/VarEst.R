@@ -65,6 +65,18 @@ VarNON <- function(fpc=FALSE, diagnostic=FALSE, nbh='par') {
   }
 }
 
+VarDI <- function(fpc=FALSE, diagnostic=FALSE, order=1) {
+  function(sys_frame) {
+    return(var_dorazio_i(sys_frame, fpc=fpc, diagnostic=diagnostic, order=order))
+  }
+}
+
+VarDC <- function(fpc=FALSE, diagnostic=FALSE, order=1) {
+  function(sys_frame) {
+    return(var_dorazio_c(sys_frame, fpc=fpc, diagnostic=diagnostic, order=order))
+  }
+}
+
 VarSYS <- function(sys_frame, a) {
   function(sys_frame) {
     return(var_sys(sys_frame, a))

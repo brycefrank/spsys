@@ -119,8 +119,8 @@ setGeneric('var_mat', function(sys_frame, ...) {
 })
 
 setMethod('var_mat', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE, nbh='mat') {
-    if(nbh=='mat') {
+  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE, nbh='par') {
+    if(nbh=='par') {
       neighborhoods <- neighborhoods_par(sys_frame)
       h <- 4
       q <- 4 # Number of elements per neighborhood
@@ -128,6 +128,8 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
       neighborhoods <- neighborhoods_non(sys_frame)
       h <- 9
       q <- 7
+    } else {
+      stop('Please specify either a "par" or "hex" neighborhood structure.')
     }
     
     N <- sys_frame@N
@@ -166,7 +168,6 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
     }
     
     mu <- colMeans(att_df)
-    var_mat <- data.frame(t(var_mat))
     var_mat <- NbhOut(var_mat, Ti, n, N, mu, 'var_mat', diagnostic)
     
     return(var_mat)
@@ -244,11 +245,17 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
       nbh <- neighborhoods_tri(sys_frame)
     } else if(nbh=='hex') {
       nbh <- neighborhoods_non(sys_frame)
-    } else if(nbh=='mat') {
+    } else if(nbh=='par') {
       nbh <- neighborhoods_par(sys_frame)
     } else {
-      stop('Please specify a neighborhood structure - either "tri", "hex" or "mat"')
+      stop('Please specify a neighborhood structure - either "tri", "hex" or "par"')
     }
+    
+    if(identical(sys_frame@a, numeric(0))) {
+      stop('This estimator requires specification of the sampling interval. Please set one using the
+           @a slot.')
+    }
+    
     N <- sys_frame@N
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     atts <- sys_frame@attributes
@@ -285,53 +292,13 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
     }
     
     mu <- colMeans(att_df)
+    
+    var_non <- as.numeric(var_non)
+    names(var_non) <- sys_frame@attributes
     var_non <- NbhOut(var_non, nbh_var, n, N, mu, 'var_non_overlap', diagnostic)
     return(var_non)
   }
 )
-
-setGeneric('var_overlap', function(sys_frame, ...) {
-  standardGeneric('var_overlap')
-})
-
-mse <- function(x) {
-  m <- length(x)
-  x_bar <- mean(x)
-  (1/m) * sum((x - x_bar)^2)
-}
-
-# FIXME I have checked this estimator up and down and it seems
-# to match the Aune-Lundberg description. Wait to see how it does for
-# other populations / RectFrames before going further.
-setMethod('var_overlap', signature(sys_frame = 'SysFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE) {
-    nbh <- neighborhoods_ov(sys_frame)
-    nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
-    
-    atts <- sys_frame@attributes
-    n <- nrow(sys_frame@data)
-    
-    neighbor_groups <- nbh %>%
-      drop_na(c('r', 'c', atts)) %>%
-      group_by(r,c)
-    
-    grp_vars <- neighbor_groups %>%
-      summarize_at(.vars = atts, .funs=~mse(.))
-    
-    var_ov <- (1/n^2) * colSums(grp_vars[,atts])
-    
-    if(fpc) {
-      var_ov <- (1-n/N) * var_ov
-    }
-    
-    mu <- colMeans(att_df)
-    var_ov <- as.data.frame(t(var_ov))
-    var_ov <- NbhOut(var_ov, grp_vars, n, N, mu, 'var_overlap', diagnostic)
-    return(var_ov)
-    
-  }
-)
-
 
 setGeneric('var_dorazio_c', function(sys_frame, ...) {
   standardGeneric('var_dorazio_c')
@@ -339,8 +306,8 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 
 
 setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
-  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=FALSE) {
-    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
+  function(sys_frame, fpc=FALSE, order=1, diagnostic=FALSE) {
+    v_srs <- var_srs(sys_frame, fpc=fpc)
     C <- gearys_c(sys_frame, order=order)
     var_c <- v_srs * C
     n <- nrow(sys_frame@data)
@@ -358,8 +325,8 @@ setGeneric('var_dorazio_i', function(sys_frame, ...) {
 # TODO this seems to consistently underestimate most of the variables
 # but seems to be fine for uncorrelated. Could just be a poor estimator *shrug*
 setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'), 
-  function(sys_frame, fpc=FALSE, N=NA_real_, order=1, diagnostic=FALSE) {
-    v_srs <- var_srs(sys_frame, fpc=fpc, N=N)
+  function(sys_frame, fpc=FALSE, order=1, diagnostic=FALSE) {
+    v_srs <- var_srs(sys_frame, fpc=fpc)
     morans_I <- morans_i(sys_frame, order=order)
     n <- nrow(sys_frame@data)
     p <- length(sys_frame@attributes)
@@ -373,7 +340,7 @@ setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'),
     
     w[gt0]  <- 1 + (2/log(morans_I[gt0])) + (2/(1/morans_I[gt0] - 1))
     var_i <- v_srs * w
-    var_i <- AdjOut(var_i, n, N, mu, w[gt0], diagnostic)
+    var_i <- AdjOut(var_i, n, sys_frame@N, mu, w[gt0], diagnostic)
     return(var_i)
   }
 )
