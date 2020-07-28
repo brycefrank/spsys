@@ -65,8 +65,8 @@ VarNON <- function(fpc=FALSE, diagnostic=FALSE, nbh='par') {
   }
 }
 
-VarSYS <- function(a, diagnostic=FALSE) {
+VarSYS <- function(sys_frame, a) {
   function(sys_frame) {
-    return(var_sys(sys_frame, a, diagnostic=diagnostic))
+    return(var_sys(sys_frame, a))
   }
 }

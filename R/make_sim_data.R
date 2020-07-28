@@ -39,7 +39,47 @@ make_hex_pops <- function() {
   pop_df
 }
 
-make_fig <- function(pops) {
+#' Makes a small dataset for testing the HexFrame functionality
+make_hex_small <- function() {
+  hex_pts_small <- hex_pts[hex_pts$s_1 < 20 & hex_pts$s_2 > 130,]
+  saveRDS(hex_pts_small, 'data/hex_pts_small.RDS')
+}
+
+make_rect_pops <- function() {
+  min_x <- 0
+  max_x <- 150
+  min_y <- 0
+  max_y <- 150
+  bbox <- data.frame(x=c(min_x, min_x, max_x, max_x), y=c(min_y, max_y, max_y, min_y))
+  bbox <- Polygons(list(Polygon(bbox)), 1)
+  bbox <- SpatialPolygons(list(bbox))
+  
+  HexPts <- spsample(bbox, type="regular", cellsize=5)
+  
+  # Now we want to simulate spatially correlated data
+  coords <- HexPts@coords
+  colnames(coords) <- c('x', 'y')
+  coords <- data.frame(coords)
+  
+  slm1 <-  gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=1, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
+  slm50 <-  gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=50, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
+  slm100 <- gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=100, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
+  
+  pop1 <-  data.frame(predict(slm1, newdata=coords, nsim=1))
+  pop50 <-  data.frame(predict(slm50, newdata=coords, nsim=1))
+  pop100 <- data.frame(predict(slm100, newdata=coords, nsim=1))
+  
+  pop_df <- cbind(pop1, pop50[,c('sim1')], pop100[,c('sim1')])
+  colnames(pop_df) <- c('s_1', 's_2', 'z_1', 'z_50', 'z_100')
+  
+  pop_df
+}
+
+rect_pts <- make_rect_pops()
+usethis::use_data(rect_pts, overwrite = TRUE)
+
+
+make_hex_fig <- function(pops) {
   plot_df <- pivot_longer(pops, c('z_1', 'z_50', 'z_100'))
   plot_df$name <- factor(plot_df$name, levels=c('z_1', 'z_50', 'z_100'))
   levels(plot_df$name) <- c(TeX('$\\phi = 1$'), TeX('$\\phi = 50$'), TeX('$\\phi = 100$'))
@@ -54,7 +94,7 @@ make_fig <- function(pops) {
     theme(strip.text.x = element_text(size = 16), legend.position='bottom')
 }
 
-hex_pts <- make_hex_pops()
+hex_pts <- make_rect_pops()
 usethis::use_data(hex_pts, overwrite = TRUE)
 
 #fig <- make_fig(hex_pts)

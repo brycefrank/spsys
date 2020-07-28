@@ -27,8 +27,8 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
       var_mu <- var_mu * (1-n/N)
     }
     
-    var_mu <- data.frame(var_mu)
-    var_mu <- VarOut(var_mu, n, N, diagnostic)
+    mu <- colMeans(att_df)
+    var_mu <- VarOut(var_mu, n, N, mu, diagnostic)
     return(var_mu)
   }
 )
@@ -38,11 +38,15 @@ setGeneric('var_sys', function(sys_frame, ...){
 })
 
 setMethod('var_sys', signature(sys_frame='SysFrame'),
-  function(sys_frame, a, diagnostic=FALSE) {
+  function(sys_frame, a) {
     starts <- subsample_starts(sys_frame, a)
     K <- nrow(starts)
     mu <- colMeans(sys_frame@data[,sys_frame@attributes])
     sse <- 0
+    
+    # TODO diagnostic should be a dataframe with the sample indices and the
+    # means of each sample
+    # can't think of anything else to add?
     
     for(k in 1:K) {
       sub <- subsample(sys_frame, starts[k,], a)
@@ -50,9 +54,7 @@ setMethod('var_sys', signature(sys_frame='SysFrame'),
       sq_err <- (mu - mu_hat)^2
       sse <- sse + sq_err
     }
-    
     return(1/K * sse)
-    
   }
 )
 
@@ -91,12 +93,16 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
     wt <- localmean.weight(coords[,1], coords[,2], pi_i, nbh=nbh)
     att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
     var_total <- sapply(colnames(att_df), so_att, att_df, pi_i, wt)
+    mu <- colMeans(att_df)
     
     if(fpc) {
       var_mu <- (1/N^2) * var_total * (1 - n/N)
     } else {
       var_mu <- (1/N^2) * var_total
     }
+    
+    # TODO add neighborhoods
+    var_mu <- VarOut(var_mu, n, N, mu, diagnostic)
     return(var_mu)
   }
 )
@@ -115,7 +121,7 @@ setGeneric('var_mat', function(sys_frame, ...) {
 setMethod('var_mat', signature(sys_frame='SysFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE, nbh='mat') {
     if(nbh=='mat') {
-      neighborhoods <- neighborhoods_mat(sys_frame)
+      neighborhoods <- neighborhoods_par(sys_frame)
       h <- 4
       q <- 4 # Number of elements per neighborhood
     } else if(nbh=='hex') {
@@ -159,8 +165,9 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
       var_mat <- (1-n/N) * var_mat
     }
     
+    mu <- colMeans(att_df)
     var_mat <- data.frame(t(var_mat))
-    var_mat <- NbhOut(var_mat, Ti, n, N, 'var_mat', diagnostic)
+    var_mat <- NbhOut(var_mat, Ti, n, N, mu, 'var_mat', diagnostic)
     
     return(var_mat)
   }
@@ -225,7 +232,8 @@ setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
       var_non <- (1-n/N) * var_non
     }
     
-    var_non <- NbhOut(var_non, nbh_var, n, N, 'var_non_overlap', diagnostic)
+    mu <- colMeans(att_df)
+    var_non <- NbhOut(var_non, nbh_var, n, N, mu, 'var_non_overlap', diagnostic)
     return(var_non)
   }
 )
@@ -237,7 +245,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
     } else if(nbh=='hex') {
       nbh <- neighborhoods_non(sys_frame)
     } else if(nbh=='mat') {
-      nbh <- neighborhoods_mat(sys_frame)
+      nbh <- neighborhoods_par(sys_frame)
     } else {
       stop('Please specify a neighborhood structure - either "tri", "hex" or "mat"')
     }
@@ -276,7 +284,8 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
       var_non <- (1-n/N) * var_non
     }
     
-    var_non <- NbhOut(var_non, nbh_var, n, N, 'var_non_overlap', diagnostic)
+    mu <- colMeans(att_df)
+    var_non <- NbhOut(var_non, nbh_var, n, N, mu, 'var_non_overlap', diagnostic)
     return(var_non)
   }
 )
@@ -315,8 +324,9 @@ setMethod('var_overlap', signature(sys_frame = 'SysFrame'),
       var_ov <- (1-n/N) * var_ov
     }
     
+    mu <- colMeans(att_df)
     var_ov <- as.data.frame(t(var_ov))
-    var_ov <- NbhOut(var_ov, grp_vars, n, N, 'var_overlap', diagnostic)
+    var_ov <- NbhOut(var_ov, grp_vars, n, N, mu, 'var_overlap', diagnostic)
     return(var_ov)
     
   }
@@ -334,8 +344,9 @@ setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'),
     C <- gearys_c(sys_frame, order=order)
     var_c <- v_srs * C
     n <- nrow(sys_frame@data)
+    mu <- colMeans(att_df)
     
-    return(v_srs * C)
+    var_c <- AdjOut(var_c, n, N, mu, C, diagnostic)
   }
 )
 
@@ -352,6 +363,8 @@ setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'),
     morans_I <- morans_i(sys_frame, order=order)
     n <- nrow(sys_frame@data)
     p <- length(sys_frame@attributes)
+    att_df <- sys_frame@data[,sys_frame@attributes, drop=FALSE]
+    mu <- colMeans(att_df)
     
     w <- rep(1, p)
     
@@ -360,35 +373,8 @@ setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'),
     
     w[gt0]  <- 1 + (2/log(morans_I[gt0])) + (2/(1/morans_I[gt0] - 1))
     var_i <- v_srs * w
-    
+    var_i <- AdjOut(var_i, n, N, mu, w[gt0], diagnostic)
     return(var_i)
   }
 )
 
-setGeneric('var_fpbk', function(sys_frame, pop_frame, ...) {
-  standardGeneric('var_fpbk')
-})
-
-setMethod('var_fpbk', signature(sys_frame='SysFrame', pop_frame='SysFrame'),
-  function(sys_frame, pop_frame, diagnostic=TRUE) {
-    N <- nrow(pop_frame@data)
-    
-    not_in_sample <- row.names(pop_frame@data)[!row.names(pop_frame@data) %in% row.names(sys_frame@data)]
-    slm_df <- pop_frame@data
-    slm_df[not_in_sample, sys_frame@attributes] <- NA
-    slm_df$x <- pop_frame@coords[,1]
-    slm_df$y <- pop_frame@coords[,2]
-    
-    vars <- c()
-    for(att in sys_frame@attributes) {
-      form <- formula(paste(att, '~1'))
-      slm <- slmfit(form, data=slm_df, xcoordcol='x', ycoordcol='y')
-      slm_pred <- predict(slm)
-      tot_var <- slm_pred$PredVar
-      var_mu <- tot_var * (1/N^2)
-      vars <- c(vars, var_mu)
-    }
-    
-    return(vars)
-  }
-)
