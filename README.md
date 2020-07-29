@@ -6,6 +6,8 @@ Many environmental surveys use systematic sampling to produce estimates of popul
 
 `spsys` derives its classes from the popular `sp` package, thus all `sp`-related functions such as `sp::plot`, `rgdal::writeOGR`, etc. work easily.
 
+This readme provides a cursory overview of the functionality of this package. Refer to the publication [] for a more expansive description as well as the user manual.
+
 ## Installation
 
 Install this package directly from GitHub using `devtools`
@@ -45,8 +47,6 @@ my_srs_estimator(hex_frame)
 
 ### Variance Assessment
 
-(TODO - make this a page instead of part of the README)
-
 `spsys` allows for the assessment the behavior of variance estimators via simulation. This is done by treating an existing `SysFrame` as a population, and sampling repeatedly from it. Consider the following example where we treat `hex_frame` as a population
 
 ```{r}
@@ -67,24 +67,22 @@ all_starts <- subsample_starts(a)
 
 for(i in 1:nrow(all_starts)) {
   subsample(hex_frame, all_starts[i,]) %>%
-    var_srs(fpc=)
+    my_srs_estimator()
 }
 ```
 
 ## Implemented Estimators
 
-For both hexagonal and rectangular systematic samples, the following estimators are implemented.
+In total, seven unique estimators are implemented, each of which contains the ability for further configuration. The particular formal definitions of these estimators are described in the manual and the publication [].
 
 ```
-Matern  (1980)*  - var_mat
-Dorazio (2003) - var_dorazio_i, var_dorazio_c
-Stevens & Olsen (2003) - var_so
+D'Orazio (2003) - var_dorazio_i, var_dorazio_c
+Mátern  (1980)*  - var_mat
 Non-Overlapping Neighborhoods - var_non_overlap
+Stevens & Olsen (2003) - var_so
 Simple Random Sampling - var_srs
 ```
 
-The hexagonal implementation for the Matern (1980) estimator is not a strict implementation of the Matern estimator. See the vignette for further details.
-
 ## Development
 
-This package is currently in development. Interested collaborators can email the author at bryce.frank@oregonstate.edu
+This package is currently in a minimally working condition. Interested collaborators can email the author at bryce.frank@oregonstate.edu to contribute to further updates.
