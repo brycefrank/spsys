@@ -215,3 +215,20 @@ test_that('VarDI works on HexFrame', {
   expect_equal(diagn@N, hf@N)
   expect_equal(round(diagn@mu[[1]], 2), 0.77)
 })
+
+test_that('VarDC works on HexFrame', {
+  v_no_fpc <- VarDC(fpc=FALSE, diagnostic=FALSE)
+  v_fpc <- VarDC(fpc=TRUE, diagnostic=FALSE)
+  v_diag <- VarDC(diagnostic=TRUE)
+  
+  est_no_fpc <- v_no_fpc(hf)[[1]]
+  expect_equal(0.1, round(est_no_fpc, 3))
+  
+  est_fpc <- v_fpc(hf)[[1]]
+  expect_equal(0.098, round(est_fpc, 3))
+  
+  diagn <- v_diag(hf)
+  expect_equal(diagn@n, 20)
+  expect_equal(diagn@N, hf@N)
+  expect_equal(round(diagn@mu[[1]], 2), 0.77)
+})

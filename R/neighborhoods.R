@@ -212,10 +212,10 @@ setMethod('neighborhoods_par', signature(sys_frame='HexFrame'),
 )
 
 setMethod('neighborhoods_par', signature(sys_frame='RectFrame'),
-  function(sys_frame) {
+  function(sys_frame, contrasts=c(1,1,-1,-1)) {
     ix <- sys_frame@data[,c('r', 'c')]
     anchors <- subsample_rect_ix(ix, c(1,1), 2)
-    neighbors <- get_mat_rect_neighborhoods(anchors)
+    neighbors <- get_mat_rect_neighborhoods(anchors, contrasts)
     return(neighbors)
   }
 )

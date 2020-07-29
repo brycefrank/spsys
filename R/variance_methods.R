@@ -118,7 +118,7 @@ setGeneric('var_mat', function(sys_frame, ...) {
   standardGeneric('var_mat')
 })
 
-setMethod('var_mat', signature(sys_frame='SysFrame'),
+setMethod('var_mat', signature(sys_frame='HexFrame'),
   function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE, nbh='par') {
     if(nbh=='par') {
       neighborhoods <- neighborhoods_par(sys_frame)
@@ -174,6 +174,57 @@ setMethod('var_mat', signature(sys_frame='SysFrame'),
   }
 )
 
+setMethod('var_mat', signature(sys_frame='RectFrame'),
+  function(sys_frame, fpc=FALSE, diagnostic=FALSE, nbh='par') {
+    if(nbh!='par') {
+      stop('Only the "par" neigbhorhood structure is defined for RectFrame')
+    }
+    
+    neighborhoods <- neighborhoods_par(sys_frame)
+    h <- 4
+    q <- 4 # Number of elements per neighborhood
+    
+    N <- sys_frame@N
+    
+    # Mean-center the attributes
+    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
+    d_ct <- cbind(sys_frame@data[,c('r', 'c')], att_ct)
+    neighborhoods <- merge(neighborhoods, d_ct, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    atts <- colnames(att_df)
+    
+    # Get the number of neighborhoods with at least one point in Q
+    p <- length(atts)
+    
+    # Set the NA values of neighborhood attributes (i.e. they are out of the area) 
+    # to zero if they are
+    zero_list <- as.list(rep(0,p))
+    names(zero_list) <- atts
+    
+    in_Q <- neighborhoods %>%
+      replace_na(zero_list)
+    
+    n <- nrow(sys_frame@data)
+    
+    # A function that generates the T value for each neighborhood
+    get_Ti <- function(x, contr) {return(sum(x * contr)^2  / h)}
+    
+    Ti <- in_Q %>%
+      group_by(r, c) %>%
+      summarize_at(.vars=atts, .funs=~get_Ti(., contr))
+    
+    var_mat <- (q * colSums(Ti[,sys_frame@attributes,drop=FALSE])) / n^2
+    
+    if(fpc) {
+      var_mat <- (1-n/N) * var_mat
+    }
+    
+    mu <- colMeans(att_df)
+    var_mat <- NbhOut(var_mat, Ti, n, N, mu, 'var_mat', diagnostic)
+    
+    return(var_mat)
+  }
+)
 
 #' Calculate the variance using a denominator of n
 #' instead of n-1
@@ -195,14 +246,18 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
 
 # FIXME is FPC appropriate for these?
 setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=FALSE) {
-    # TODO implement a check for nbh for RectFrames (Should only take mat)
+  function(sys_frame, fpc=FALSE, diagnostic=FALSE, nbh='par') {
+    if(nbh!='par') {
+      stop('Only the "par" neigbhorhood structure is defined for RectFrame')
+    }
+    
     nbh <- neighborhoods_non(sys_frame)
     nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
     atts <- sys_frame@attributes
     att_df <- sys_frame@data[, atts, drop=FALSE]
     n <- nrow(sys_frame@data)
+    N <- sys_frame@N
     
     neighbor_groups <- nbh %>%
       drop_na(c('r', 'c', atts)) %>%
@@ -234,13 +289,15 @@ setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
     }
     
     mu <- colMeans(att_df)
+    var_non <- as.numeric(var_non)
+    names(var_non) <- sys_frame@attributes
     var_non <- NbhOut(var_non, nbh_var, n, N, mu, 'var_non_overlap', diagnostic)
     return(var_non)
   }
 )
 
 setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, nbh='tri', diagnostic=FALSE) {
+  function(sys_frame, fpc=FALSE, nbh='tri', diagnostic=FALSE) {
     if(nbh=='tri') {
       nbh <- neighborhoods_tri(sys_frame)
     } else if(nbh=='hex') {
@@ -308,13 +365,14 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 
 setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, order=1, diagnostic=FALSE) {
+    att_df <- sys_frame@data[,sys_frame@attributes]
     v_srs <- var_srs(sys_frame, fpc=fpc)
     C <- gearys_c(sys_frame, order=order)
     var_c <- v_srs * C
     n <- nrow(sys_frame@data)
     mu <- colMeans(att_df)
     
-    var_c <- AdjOut(var_c, n, N, mu, C, diagnostic)
+    var_c <- AdjOut(var_c, n, sys_frame@N, mu, C, diagnostic)
   }
 )
 
