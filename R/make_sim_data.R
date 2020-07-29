@@ -39,11 +39,20 @@ make_hex_pops <- function() {
   pop_df
 }
 
+hex_pts <- make_hex_pops()
+usethis::use_data(hex_pts, overwrite = TRUE)
+
 #' Makes a small dataset for testing the HexFrame functionality
 make_hex_small <- function() {
+  hex_pts <- 
   hex_pts_small <- hex_pts[hex_pts$s_1 < 20 & hex_pts$s_2 > 130,]
-  saveRDS(hex_pts_small, 'data/hex_pts_small.RDS')
+  return(hex_pts_small)
+  #saveRDS(hex_pts_small, 'data/hex_pts_small.RDS')
 }
+
+hex_pts_small <- make_hex_small()
+usethis::use_data(hex_pts_small, overwrite = TRUE)
+
 
 make_rect_pops <- function() {
   min_x <- 0
@@ -94,8 +103,6 @@ make_hex_fig <- function(pops) {
     theme(strip.text.x = element_text(size = 16), legend.position='bottom')
 }
 
-hex_pts <- make_rect_pops()
-usethis::use_data(hex_pts, overwrite = TRUE)
 
 #fig <- make_fig(hex_pts)
 #ggsave('vignettes/fig_2.png', dpi=300, units='in', width=8, height=4.25)

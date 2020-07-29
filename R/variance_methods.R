@@ -251,6 +251,7 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
       stop('Please specify a neighborhood structure - either "tri", "hex" or "par"')
     }
     
+    # TODO this might only be necessary for fpc, check
     if(identical(sys_frame@a, numeric(0))) {
       stop('This estimator requires specification of the sampling interval. Please set one using the
            @a slot.')
@@ -321,9 +322,6 @@ setGeneric('var_dorazio_i', function(sys_frame, ...) {
   standardGeneric('var_dorazio_i')
 })
 
-
-# TODO this seems to consistently underestimate most of the variables
-# but seems to be fine for uncorrelated. Could just be a poor estimator *shrug*
 setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, order=1, diagnostic=FALSE) {
     v_srs <- var_srs(sys_frame, fpc=fpc)
@@ -340,7 +338,8 @@ setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'),
     
     w[gt0]  <- 1 + (2/log(morans_I[gt0])) + (2/(1/morans_I[gt0] - 1))
     var_i <- v_srs * w
-    var_i <- AdjOut(var_i, n, sys_frame@N, mu, w[gt0], diagnostic)
+    names(w) <- sys_frame@attributes
+    var_i <- AdjOut(var_i, n, sys_frame@N, mu, w, diagnostic)
     return(var_i)
   }
 )

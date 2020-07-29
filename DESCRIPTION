@@ -24,3 +24,5 @@ Collate:
     'neighborhoods.R'
     'spatial.R'
     'variance_methods.R'
+Suggests: 
+    testthat
