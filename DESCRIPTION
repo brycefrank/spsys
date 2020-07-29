@@ -25,4 +25,5 @@ Collate:
     'spatial.R'
     'variance_methods.R'
 Suggests: 
-    testthat
+    testthat,
+    covr

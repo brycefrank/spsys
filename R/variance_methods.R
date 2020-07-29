@@ -119,7 +119,7 @@ setGeneric('var_mat', function(sys_frame, ...) {
 })
 
 setMethod('var_mat', signature(sys_frame='HexFrame'),
-  function(sys_frame, fpc=FALSE, N=NA_real_, diagnostic=FALSE, nbh='par') {
+  function(sys_frame, fpc=FALSE, diagnostic=FALSE, nbh='par') {
     if(nbh=='par') {
       neighborhoods <- neighborhoods_par(sys_frame)
       h <- 4

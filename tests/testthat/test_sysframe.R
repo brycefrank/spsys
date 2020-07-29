@@ -1,6 +1,5 @@
 # This testing script tests all variance estimators that do not rely specifically on 
 # HexFrame or RectFrame
-
 data("hex_pts_small")
 hex_pts_small <- SpatialPointsDataFrame(hex_pts_small[,c('s_1', 's_2')], data=hex_pts_small)
 hf <- HexFrame(hex_pts_small, attributes = c('z_1', 'z_50', 'z_100'))
