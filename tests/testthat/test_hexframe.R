@@ -35,6 +35,19 @@ test_that('HexFrame is properly indexed with default transform.', {
   expect_equal(ix[1,2], 3)
 })
 
+test_that('First order hexagon subsample returns valid index', {
+  # a is even
+  hf_subsamp_2 <- subsample(hf, c(1,1), 2)
+  ix_2 <- hf_subsamp_2@data[,c('r', 'c')]
+  expect_odd_even(ix_2)
+  
+  
+  # a is odd
+  hf_subsamp_3 <- subsample(hf, c(1,1), 3)
+  ix_3 <- hf_subsamp_3@data[,c('r', 'c')]
+  expect_odd_even(ix_3)
+})
+
 #' An input set of hexagonal indices can be arbitrary and must be standardized
 #' by the instantiation of a HexFrame. The set of indices is first
 #' translated to the (1,1) origin. Two important 'modes' could be provided by

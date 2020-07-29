@@ -1,5 +1,4 @@
 data("rect_pts_small")
-
 rect_pts_small <- SpatialPointsDataFrame(rect_pts_small[,c('s_1', 's_2')], data=rect_pts_small)
 rf <- RectFrame(rect_pts_small, attributes = c('z_1', 'z_50', 'z_100'))
 rf@a <- 3
