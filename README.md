@@ -36,10 +36,10 @@ hex_frame <- HexFrame(hex_points, c('vol', 'ba'), N=10000)
 Once we have wrapped our sample information within a `HexFrame` or `RectFrame`, the next step is to construct a variance estimator. For example, we can construct a variance estimator that assumes simple random sampling was conducted, as is common practice for many environmental sample surveys.
 
 ```
-my_srs_estimator <- VarSRS(fpc=TRUE, diagnostic=TRUE)
+my_srs_estimator <- VarSRS(fpc=TRUE)
 ```
 
-`my_srs_estimator` now represents a function that, when we pass this function a `HexFrame` or `RectFrame`, will return the variance estimate along with other diagnostic information.
+`my_srs_estimator` now represents a function that, when we pass this function a `HexFrame` or `RectFrame`, will return the variance estimate.
 
 ```
 my_srs_estimator(hex_frame)
