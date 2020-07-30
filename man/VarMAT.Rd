@@ -4,15 +4,15 @@
 \alias{VarMAT}
 \title{Matern (1984) local variance estimator}
 \usage{
-VarMAT(fpc = FALSE, diagnostic = TRUE, nbh = "mat")
+VarMAT(fpc = FALSE, diagnostic = FALSE, nbh = "par")
 }
 \arguments{
 \item{fpc}{If TRUE, finite population correction factor will be applied.}
 
 \item{diagnostic}{If TRUE, diagnostic information, i.e. a VarOut, object will be returned.}
 
-\item{nbh}{The neighborhood structure. For \code{HexFrame} one of either \code{mat} or \code{hex}, for \code{RectFrame} only
-\code{mat} is supported and reflects the original structure implemented by Matern.}
+\item{nbh}{The neighborhood structure. For \code{HexFrame} one of either \code{par} or \code{hex}, for \code{RectFrame} only
+\code{par} is supported and reflects the original structure implemented by Matern.}
 }
 \value{
 Returns a function with the specified arguments that can be called on a

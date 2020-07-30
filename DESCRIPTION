@@ -11,16 +11,17 @@ LazyData: true
 Roxygen: list(markdown=TRUE )
 RoxygenNote: 6.1.1
 Collate: 
+    'VarOut.R'
+    'AdjOut.R'
     'subsample.R'
     'SysFrame.R'
     'HexFrame.R'
-    'VarOut.R'
     'NbhOut.R'
     'RectFrame.R'
     'VarEst.R'
     'assessment.R'
-    'cast_hex.R'
     'data.R'
+    'make_sim_data.R'
     'neighborhoods.R'
     'spatial.R'
     'variance_methods.R'
@@ -28,7 +29,7 @@ Imports:
     dplyr,
     sp,
     tidyr,
-    RFast,
+    Rfast,
     spsurvey
 Suggests: 
     testthat,

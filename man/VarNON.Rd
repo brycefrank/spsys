@@ -4,15 +4,15 @@
 \alias{VarNON}
 \title{Non-overlapping stratified random sampling estimator}
 \usage{
-VarNON(fpc = FALSE, diagnostic = TRUE)
+VarNON(fpc = FALSE, diagnostic = FALSE, nbh = "par")
 }
 \arguments{
 \item{fpc}{If TRUE, finite population correction factor will be applied.}
 
 \item{diagnostic}{If TRUE, diagnostic information, i.e. a VarOut, object will be returned.}
 
-\item{nbh}{The neighborhood structure. For \code{HexFrame} one of either \code{tri} \code{mat} or \code{hex}.
-For \code{RectFrame} only \code{mat} is supported.}
+\item{nbh}{The neighborhood structure. For \code{HexFrame} one of either \code{tri} \code{par} or \code{hex}.
+For \code{RectFrame} only \code{par} is supported.}
 }
 \description{
 Constructor for a local variance estimator that aggregates variance estimates

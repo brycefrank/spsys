@@ -4,7 +4,7 @@
 \alias{VarSO}
 \title{Stevens and Olsen (2003) local variance estimator}
 \usage{
-VarSO(fpc = FALSE, diagnostic = TRUE, coord_cols = NA, nbh = 4)
+VarSO(fpc = FALSE, diagnostic = FALSE, coord_cols = NA, nbh = 4)
 }
 \arguments{
 \item{fpc}{If TRUE, finite population correction factor will be applied.}

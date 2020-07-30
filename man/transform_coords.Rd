@@ -2,13 +2,16 @@
 % Please edit documentation in R/subsample.R
 \name{transform_coords}
 \alias{transform_coords}
-\title{Transforms a set of population unit coordinates to an integer index. Used in the
-\code{index_hex} and \code{index_sq} functions.}
+\title{Transforms a set of population unit coordinates to an integer index.}
 \usage{
-transform_coords(coords)
+transform_coords(coords, d_x = NA, d_y = NA)
 }
 \arguments{
 \item{coords}{A dataframe of x,y coordinates of population unit locations.}
+
+\item{d_x}{The distance between points in the x dimension}
+
+\item{d_y}{The distance between points in the y dimension}
 }
 \value{
 A dataframe with two columns, r and c, that correspond to row and column indices

@@ -4,7 +4,7 @@
 \alias{VarSRS}
 \title{Variance estimator assuming simple random sampling}
 \usage{
-VarSRS(fpc = FALSE, diagnostic = TRUE)
+VarSRS(fpc = FALSE, diagnostic = FALSE)
 }
 \arguments{
 \item{fpc}{If TRUE, finite population correction factor will be applied.}
