@@ -21,7 +21,7 @@ setMethod('merge', signature(x='SysFrame', y='data.frame'),
   function(x, y, by=intersect(names(x), names(y)), by.x=by, 
            by.y=by, all.x=TRUE, suffixes = c(".x",".y"), 
            incomparables = NULL, duplicateGeoms=FALSE, ...){
-    # Lifted from sp - merge.R
+    # Originally from sp - merge.R
     # Author: Robert J. Hijmans
     # Date : November 2011 / October 2015
     # Version 2

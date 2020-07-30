@@ -4,11 +4,11 @@ Version: 0.1
 Authors@R: person("Bryce", "Frank", email = "bfrank70@gmail.com",
                   role = c("aut", "cre"))
 Author: Bryce Frank [aut]
-Description: Implement and compare variance estimators for systematic sampling designs.
+Description: Implement and compare variance estimators for two-dimensional systematic sampling designs.
 Depends: R (>= 3.1.0)
 License: MIT
 LazyData: true
-Roxygen: list(markdown=TRUE)
+Roxygen: list(markdown=TRUE )
 RoxygenNote: 6.1.1
 Collate: 
     'subsample.R'
@@ -24,6 +24,12 @@ Collate:
     'neighborhoods.R'
     'spatial.R'
     'variance_methods.R'
+Imports:
+    dplyr,
+    sp,
+    tidyr,
+    RFast,
+    spsurvey
 Suggests: 
     testthat,
     covr

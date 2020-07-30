@@ -1,4 +1,4 @@
-# Function that make the simulated data sets
+# Functions that make the simulated data sets
 library(sp)
 library(raster)
 library(dplyr)

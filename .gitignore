@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+sys.Rproj
 data/old
 R/old
 data/or_hex.RDS

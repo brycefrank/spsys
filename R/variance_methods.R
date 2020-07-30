@@ -66,7 +66,6 @@ setGeneric('var_so', function(sys_frame, ...){
 
 setMethod('var_so', signature(sys_frame='SysFrame'),
   function(sys_frame, fpc=FALSE, diagnostic=FALSE, coord_cols=NA, nbh=4) {
-    # TODO this should not strictly be needed
     N <- sys_frame@N
     if(N==Inf) {
       stop('var_so requires a population size N')
@@ -82,8 +81,6 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
       pi_i <- sys_frame@data$pi_i
     }
     
-    # TODO check for bad inputs
-    # FIXME this issues a warning if coord_cols is a vector of colnames
     if(!is.na(coord_cols)) {
       coords <- sys_frame@data[,coord_cols]
     } else {
@@ -101,7 +98,6 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
       var_mu <- (1/N^2) * var_total
     }
     
-    # TODO add neighborhoods
     var_mu <- VarOut(var_mu, n, N, mu, diagnostic)
     return(var_mu)
   }
@@ -234,8 +230,6 @@ pop_var <- function(z) {
   ssq/n
 }
 
-# TODO give this a more descriptive name
-# TODO implement fpc in a better way upstream
 weight_var <- function(var, q_j, fpc, N_neighbs) {
   (1/N_neighbs)^2 * (var / q_j) * fpc
 }
@@ -244,7 +238,6 @@ setGeneric('var_non_overlap', function(sys_frame, ...) {
   standardGeneric('var_non_overlap')
 })
 
-# FIXME is FPC appropriate for these?
 setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
   function(sys_frame, fpc=FALSE, diagnostic=FALSE, nbh='par') {
     if(nbh!='par') {
@@ -308,7 +301,6 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
       stop('Please specify a neighborhood structure - either "tri", "hex" or "par"')
     }
     
-    # TODO this might only be necessary for fpc, check
     if(identical(sys_frame@a, numeric(0))) {
       stop('This estimator requires specification of the sampling interval. Please set one using the
            @a slot.')
@@ -334,7 +326,6 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
     q <- neighbor_groups %>%
       summarize(q_j=n())
     
-    # TODO some neighborhoods return a 0 variance
     nbh_var <- neighbor_groups %>%
       summarize_at(.vars = atts, pop_var) %>%
       merge(q) %>%

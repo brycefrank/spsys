@@ -1,29 +1,12 @@
 #' @include SysFrame.R
 #' @include subsample.R
 
-#validate_hex_frame <- function(object) {
-#  ix <- object@data[,c('r', 'c')]
-#  er_oc <- sum(ix$c[ix$r %% 2 == 0] %% 2 != 0)
-#  or_ec <- sum(ix$c[ix$r %% 2 != 0] %% 2 == 0)
-#  
-#  if(er_oc + or_ec > 0) {
-#    error_msg <- sprintf('This index had %i even-row odd-row matchings and %i odd-row even-row matchings,
-#              there should be 0 of each', er_oc, or_ec)
-#    return(error_msg)
-#  } else {
-#    return(TRUE)
-#  }
-#}
-
 setClass('HexFrame', contains='SysFrame',
          slots = list(
            a='numeric',
            N='numeric'
          ))
 
-# TODO not sure why this needs to be repeated from sysframe
-# is it possible to do something like callNextMethod but for
-# instantiation?
 HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE, a=1, N=Inf) {
   sys_frame <- SysFrame(splydf, attributes)
   
@@ -35,8 +18,6 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE,
   hex_frame@attributes <- sys_frame@attributes
   hex_frame@N <- N
   
-  
-  # TODO make this condition a bit cleaner
   if(length(index) > 1) {
     hex_frame@data[,c('r', 'c')] <- index
   } else {

@@ -26,11 +26,3 @@ NbhOut <- function(estimate, neighborhoods, n, N, mu, name, diagnostic) {
     return(estimate)
   }
 }
-
-setMethod('summary', signature(var_out = 'NbhOut'), 
-  function(var_out) {
-    callNextMethod(var_out)
-    cat('\nNumber of neighborhoods: ', nrow(var_out@neighborhoods), '\n')
-    print(head(var_out@neighborhoods))
-  }
-)

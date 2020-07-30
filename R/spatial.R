@@ -2,22 +2,6 @@
 # variance estimators
 library(Rfast)
 
-#' For a given set of (subsampled) hexagonal indices, translate
-#' to the base coordinate system.
-translate_hex_ix <- function(hex_ix, a) {
-  r <- hex_ix$r
-  c <- hex_ix$c
-  
-  min_r <- min(r)
-  min_c <- min(c)
-  
-  r_t <- (r - min_r) / a + 1
-  c_t <- (c - min_c) / a + 1
-  
-  return(data.frame(r_t , c_t))
-}
-
-
 setGeneric('distance_matrix', function(sys_frame, ...) {
   standardGeneric('distance_matrix')
 })
@@ -101,7 +85,6 @@ setMethod('morans_i', signature(sys_frame='SysFrame'),
     att_df <- as.matrix(sys_frame@data[, sys_frame@attributes, drop=FALSE])
     p <- length(names(sys_frame[,sys_frame@attributes]))
     
-    # TODO could be optimized further
     neighbor_inds <- which(W == 1, arr.ind=TRUE)
     numerator <- rep(0, p)
     att_means <- colMeans(att_df)

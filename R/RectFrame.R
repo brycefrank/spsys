@@ -6,7 +6,7 @@ setClass('RectFrame', contains='SysFrame',
            N='numeric'
          ))
 
-RectFrame <- function(splydf, attributes=character(), index=NA, N=Inf, a=1) {
+RectFrame <- function(splydf, attributes=character(), index=NA, N=Inf, a=1, d_x=NA, d_y=NA) {
   sys_frame <- SysFrame(splydf, attributes)
   
   rect_frame <- new('RectFrame')
@@ -16,11 +16,10 @@ RectFrame <- function(splydf, attributes=character(), index=NA, N=Inf, a=1) {
   rect_frame@coords <- sys_frame@coords
   rect_frame@attributes <- sys_frame@attributes
   
-  # TODO make this condition a bit cleaner
   if(length(index) > 1) {
     rect_frame@data[,c('r', 'c')] <- index
   } else {
-    rect_frame@data[,c('r', 'c')] <- transform_coords(rect_frame@coords)
+    rect_frame@data[,c('r', 'c')] <- transform_coords(rect_frame@coords, d_x, d_y)
   }
   
   # Ensure the rows start from 1 and the columns start from 1

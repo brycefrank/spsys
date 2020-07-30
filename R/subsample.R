@@ -34,29 +34,35 @@ setMethod('subsample_starts', signature = list(sys_frame='HexFrame', a='numeric'
 })
 
 
-#' Transforms a set of population unit coordinates to an integer index. Used in the
-#' `index_hex` and `index_sq` functions.
+#' Transforms a set of population unit coordinates to an integer index.
 #' 
 #' Note that input coordinates must be spatially aligned vertically and horizontally. This 
 #' may not always be the case, e.g. for some spatial projections that curve geographic space.
 #' 
 #' @param coords A dataframe of x,y coordinates of population unit locations.
+#' @param d_x The distance between points in the x dimension
+#' @param d_y The distance between points in the y dimension
 #' @return A dataframe with two columns, r and c, that correspond to row and column indices
-transform_coords <- function(coords) {
+transform_coords <- function(coords, d_x=NA, d_y=NA) {
   x_shift <- coords[,1] - min(coords[,1])
   y_shift <- coords[,2] - max(coords[,2])
   
-  u_x <- unique(x_shift)
-  u_x <- u_x[order(u_x)]
-  h_dist <- u_x[[2]] - u_x[[1]]
+  if(is.na(d_x)) {
+    u_x <- unique(x_shift)
+    u_x <- u_x[order(u_x)]
+    d_x <- u_x[[2]] - u_x[[1]]
+  }
   
-  u_y <- unique(y_shift)
-  u_y <- u_y[order(u_y)]
-  v_dist <- u_y[[2]] - u_y[[1]]
+  if(is.na(d_y)) {
+    u_y <- unique(y_shift)
+    u_y <- u_y[order(u_y)]
+    d_y <- u_y[[2]] - u_y[[1]]
+  }
+  
   
   # Create a dataframe of integers representing a grid of hexagons
-  c <-    x_shift / h_dist + 1
-  r <-    abs(y_shift / v_dist) + 1
+  c <-    x_shift / d_x + 1
+  r <-    abs(y_shift / d_y) + 1
   
   # There may be some floating point error
   c <- round(c)
@@ -88,7 +94,6 @@ index_sq <- function(square_polys) {
   
 }
 
-# TODO just make this a method?
 subsample_hex_ix <- function(hex_ix, start_pos, a) {
   max_r <- max(hex_ix$r)
   max_c <- max(hex_ix$c)

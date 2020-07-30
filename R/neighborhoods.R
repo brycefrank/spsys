@@ -1,10 +1,7 @@
 # Methods for constructing neighborhoods
 
-
 #' For some input set of neighborhood center points
 #' return all immediate hexagonal neighbors.
-#' TODO could make this Hex/Rect method
-#' TODO the default contrasts is a bit messy...
 get_hex_neighborhoods <- function(centers, contrasts=c(1,1,1,0,-1,-1,-1)) {
   neighborhoods <- list()
   for(i in 1:nrow(centers)) {
