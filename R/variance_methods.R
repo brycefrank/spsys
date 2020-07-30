@@ -1,5 +1,4 @@
 library(spsurvey)
-library(sptotal)
 library(tidyr)
 
 setGeneric('var_srs', function(sys_frame, ...) {

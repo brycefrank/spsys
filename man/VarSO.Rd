@@ -2,7 +2,7 @@
 % Please edit documentation in R/VarEst.R
 \name{VarSO}
 \alias{VarSO}
-\title{Stevens and Olsen (2003) local variance estimator}
+\title{Neighborhood-based estimator from \insertCite{stevens_variance_2003;textual}{spsys}.}
 \usage{
 VarSO(fpc = FALSE, diagnostic = FALSE, coord_cols = NA, nbh = 4)
 }
@@ -21,7 +21,13 @@ Returns a function with the specified arguments that can be called on a
 SysFrame.
 }
 \description{
-Constructor for a local variance estimator introduced in Stevens and Olsen (2003). This is a wrapper
+Constructor for a local variance estimator introduced in \insertCite{stevens_variance_2003;textual}{spsys}.
+This is a wrapper
 for an implementation in the \code{spsurvey} package. A column named \code{pi_i} must be present in the dataframe
 contained in the \code{@data} slot that specifies the first order inclusion probabilities of each element in the sample.
+}
+\references{
+{
+\insertAllCited{}
+}
 }

@@ -10,6 +10,8 @@ License: MIT
 LazyData: true
 Roxygen: list(markdown=TRUE )
 RoxygenNote: 6.1.1
+Encoding: UTF-8
+RdMacros: Rdpack
 Collate: 
     'VarOut.R'
     'AdjOut.R'
@@ -21,7 +23,6 @@ Collate:
     'VarEst.R'
     'assessment.R'
     'data.R'
-    'make_sim_data.R'
     'neighborhoods.R'
     'spatial.R'
     'variance_methods.R'
@@ -30,7 +31,8 @@ Imports:
     sp,
     tidyr,
     Rfast,
-    spsurvey
+    spsurvey,
+    Rdpack
 Suggests: 
     testthat,
     covr

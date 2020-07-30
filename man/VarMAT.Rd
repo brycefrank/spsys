@@ -2,7 +2,7 @@
 % Please edit documentation in R/VarEst.R
 \name{VarMAT}
 \alias{VarMAT}
-\title{Matern (1984) local variance estimator}
+\title{\insertCite{matern_spatial_1986;textual}{spsys} local variance estimator}
 \usage{
 VarMAT(fpc = FALSE, diagnostic = FALSE, nbh = "par")
 }
@@ -11,13 +11,17 @@ VarMAT(fpc = FALSE, diagnostic = FALSE, nbh = "par")
 
 \item{diagnostic}{If TRUE, diagnostic information, i.e. a VarOut, object will be returned.}
 
-\item{nbh}{The neighborhood structure. For \code{HexFrame} one of either \code{par} or \code{hex}, for \code{RectFrame} only
-\code{par} is supported and reflects the original structure implemented by Matern.}
+\item{nbh}{The neighborhood structure. For \code{HexFrame} one of either \code{'par'} or \code{'hex'}, for \code{RectFrame} only
+\code{par} is supported and reflects the original structure implemented by Matèrn}
 }
 \value{
-Returns a function with the specified arguments that can be called on a
-SysFrame.
+Returns a function with the specified arguments that can be called on a `SysFrame``
 }
 \description{
-Constructor for a local variance estimator introduced by Matern in [] and [].
+Constructor for a local variance estimator introduced in \insertCite{matern_spatial_1986;textual}{spsys}.
+}
+\references{
+{
+\insertAllCited{}
+}
 }

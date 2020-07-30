@@ -18,3 +18,7 @@ SysFrame.
 \description{
 Constructor for the variance estimator assuming simple random sampling.
 }
+\examples{
+v_srs <- VarSRS(fpc=TRUE)
+v_srs(hex_frame)
+}
