@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>For some input set of neighborhood center points
-return all immediate hexagonal neighbors. — get_hex_neighborhoods • spsys</title>
+<title>Retrieves all immediate hexagonal neighbors. — get_hex_neighborhoods • spsys</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -44,11 +43,9 @@ return all immediate hexagonal neighbors. — get_hex_neighborhoods • spsys</t
 
 
 
-<meta property="og:title" content="For some input set of neighborhood center points
-return all immediate hexagonal neighbors. — get_hex_neighborhoods" />
+<meta property="og:title" content="Retrieves all immediate hexagonal neighbors. — get_hex_neighborhoods" />
 
-<meta property="og:description" content="For some input set of neighborhood center points
-return all immediate hexagonal neighbors." />
+<meta property="og:description" content="Retrieves all immediate hexagonal neighbors." />
 
 <meta property="og:image" content="/logo.png" />
 
@@ -115,21 +112,38 @@ return all immediate hexagonal neighbors." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>For some input set of neighborhood center points
-return all immediate hexagonal neighbors.</h1>
+    <h1>Retrieves all immediate hexagonal neighbors.</h1>
     
     <div class="hidden name"><code>get_hex_neighborhoods.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>For some input set of neighborhood center points
-return all immediate hexagonal neighbors.</p>
+    <p>Retrieves all immediate hexagonal neighbors.</p>
     
     </div>
 
     <pre class="usage"><span class='fu'>get_hex_neighborhoods</span>(<span class='no'>centers</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>0</span>, -<span class='fl'>1</span>, -<span class='fl'>1</span>, -<span class='fl'>1</span>))</pre>
-        
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>centers</th>
+      <td><p>A dataframe indicating the index locations of the neighborhood
+centers</p></td>
+    </tr>
+    <tr>
+      <th>contrasts</th>
+      <td><p>A vector of contrasts to attach to each neighborhood</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A dataframe with columns <code>r_n</code>, <code>c_n</code> and <code>contr</code> corresponding to
+the neighbor row position, column position and contrast value</p>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

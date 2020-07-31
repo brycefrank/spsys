@@ -2,14 +2,25 @@
 % Please edit documentation in R/neighborhoods.R
 \name{get_mat_hex_neighborhoods}
 \alias{get_mat_hex_neighborhoods}
-\title{The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood.}
+\title{Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+as inputs. This is used internally to retrieve the paralellogram neighborhoods
+for \code{HexFrame}s}
 \usage{
 get_mat_hex_neighborhoods(anchors, contrasts = c(1, 1, -1, -1))
 }
-\description{
-The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood.
+\arguments{
+\item{anchors}{A dataframe indicating the index locations of the neighborhood, which is
+the top/left point of the neighborhood}
+
+\item{contrasts}{A vector of contrasts to attach to each neighborhood}
 }
+\value{
+A dataframe with columns \code{r_n}, \code{c_n} and \code{contr} corresponding to
+the neighbor row position, column position and contrast value
+}
+\description{
+Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+as inputs. This is used internally to retrieve the paralellogram neighborhoods
+for \code{HexFrame}s
+}
+\keyword{internal}

@@ -121,6 +121,7 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
 
 #' Computes the Stevens and Olsen estimator for a specific attribute. 
 #' Used internally with var_so function.
+#' @keywords internal
 so_att <- function(att, att_df, pi_i, wt) {
   z <- att_df[,att]
   localmean.var(z/pi_i, wt)
@@ -247,6 +248,7 @@ setMethod('var_mat', signature(sys_frame='RectFrame'),
 
 #' Calculate the variance using a denominator of n
 #' instead of n-1
+#' @keywords internal
 pop_var <- function(z) {
   n <- length(z)
   ssq <- sum((z - mean(z))^2)

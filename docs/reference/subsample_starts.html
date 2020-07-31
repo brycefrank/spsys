@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>For a given sampling interval, return the set of all possible starting positions — subsample_starts • spsys</title>
+<title>Retrieve the set of all possible starting positions — subsample_starts • spsys</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -43,9 +43,13 @@
 
 
 
-<meta property="og:title" content="For a given sampling interval, return the set of all possible starting positions — subsample_starts" />
+<meta property="og:title" content="Retrieve the set of all possible starting positions — subsample_starts" />
 
-<meta property="og:description" content="For a given sampling interval, return the set of all possible starting positions" />
+<meta property="og:description" content="In two-dimensional systematic samples, all possible samples can be obtained
+merely by moving the starting position within a &quot;starting region&quot; contained
+by the top-left-most sample group. For a sampling interveal a the hexagonal
+and rectangular configurations will contain a^2 possible samples. This function
+retrieves those starting positions and is used internally as part of compare_estimators()." />
 
 <meta property="og:image" content="/logo.png" />
 
@@ -112,14 +116,18 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>For a given sampling interval, return the set of all possible starting positions</h1>
+    <h1>Retrieve the set of all possible starting positions</h1>
     
     <div class="hidden name"><code>subsample_starts.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>For a given sampling interval, return the set of all possible starting positions</p>
+    <p>In two-dimensional systematic samples, all possible samples can be obtained
+merely by moving the starting position within a "starting region" contained
+by the top-left-most sample group. For a sampling interveal <code>a</code> the hexagonal
+and rectangular configurations will contain <code>a^2</code> possible samples. This function
+retrieves those starting positions and is used internally as part of <code><a href='compare_estimators.html'>compare_estimators()</a></code>.</p>
     
     </div>
 
@@ -128,6 +136,10 @@
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>sys_frame</th>
+      <td><p>A <code>SysFrame</code> object</p></td>
+    </tr>
     <tr>
       <th>a</th>
       <td><p>The sampling interval</p></td>

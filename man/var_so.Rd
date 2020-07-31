@@ -2,12 +2,22 @@
 % Please edit documentation in R/variance_methods.R
 \name{var_so}
 \alias{var_so}
-\title{Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator.}
+\title{Internal function used to compute the Stevens and Olsen (2003) variance estimate.}
 \usage{
 var_so(sys_frame, ...)
 }
-\description{
-Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator.
+\arguments{
+\item{sys_frame}{A \code{SysFrame} object}
+
+\item{fpc}{If TRUE, use the finite population correction factor}
+
+\item{diagnostic}{If TRUE return diagnostic information, else return only the variance estimate}
+
+\item{coord_cols}{A named vector of coordinate columns}
+
+\item{nbh}{An integer representing the number of neighbors to use in the variance estimate}
 }
+\description{
+Internal function used to compute the Stevens and Olsen (2003) variance estimate.
+}
+\keyword{internal}

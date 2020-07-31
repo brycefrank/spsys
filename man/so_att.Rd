@@ -11,3 +11,4 @@ so_att(att, att_df, pi_i, wt)
 Computes the Stevens and Olsen estimator for a specific attribute.
 Used internally with var_so function.
 }
+\keyword{internal}

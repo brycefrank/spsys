@@ -6,9 +6,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood. — get_mat_hex_neighborhoods • spsys</title>
+<title>Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+as inputs. This is used internally to retrieve the paralellogram neighborhoods
+for <code>HexFrame</code>s — get_mat_hex_neighborhoods • spsys</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -45,13 +45,13 @@ for each neighborhood. — get_mat_hex_neighborhoods • spsys</title>
 
 
 
-<meta property="og:title" content="The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood. — get_mat_hex_neighborhoods" />
+<meta property="og:title" content="Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+as inputs. This is used internally to retrieve the paralellogram neighborhoods
+for <code>HexFrame</code>s — get_mat_hex_neighborhoods" />
 
-<meta property="og:description" content="The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood." />
+<meta property="og:description" content="Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+as inputs. This is used internally to retrieve the paralellogram neighborhoods
+for HexFrames" />
 
 <meta property="og:image" content="/logo.png" />
 
@@ -118,23 +118,42 @@ for each neighborhood." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood.</h1>
+    <h1>Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+as inputs. This is used internally to retrieve the paralellogram neighborhoods
+for <code>HexFrame</code>s</h1>
     
     <div class="hidden name"><code>get_mat_hex_neighborhoods.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood.</p>
+    <p>Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+as inputs. This is used internally to retrieve the paralellogram neighborhoods
+for <code>HexFrame</code>s</p>
     
     </div>
 
     <pre class="usage"><span class='fu'>get_mat_hex_neighborhoods</span>(<span class='no'>anchors</span>, <span class='kw'>contrasts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>, <span class='fl'>1</span>, -<span class='fl'>1</span>, -<span class='fl'>1</span>))</pre>
-        
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>anchors</th>
+      <td><p>A dataframe indicating the index locations of the neighborhood, which is
+the top/left point of the neighborhood</p></td>
+    </tr>
+    <tr>
+      <th>contrasts</th>
+      <td><p>A vector of contrasts to attach to each neighborhood</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A dataframe with columns <code>r_n</code>, <code>c_n</code> and <code>contr</code> corresponding to
+the neighbor row position, column position and contrast value</p>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -45,8 +45,9 @@
 
 <meta property="og:title" content="Simulated data arranged in a rectangular grid. — rect_pts" />
 
-<meta property="og:description" content="A dataset containing the prices and other attributes of almost 54,000
-diamonds." />
+<meta property="og:description" content="The dataset contains three attributes, z_1, z_50 and z_100 simulated from a spatial
+linear model with a range parameter of 1, 50 and 100 respectively, a nugget parameter of
+0.5, partial sill of 2 and global mean of 1." />
 
 <meta property="og:image" content="/logo.png" />
 
@@ -120,8 +121,9 @@ diamonds." />
 
     <div class="ref-description">
     
-    <p>A dataset containing the prices and other attributes of almost 54,000
-diamonds.</p>
+    <p>The dataset contains three attributes, z_1, z_50 and z_100 simulated from a spatial
+linear model with a range parameter of 1, 50 and 100 respectively, a nugget parameter of
+0.5, partial sill of 2 and global mean of 1.</p>
     
     </div>
 
@@ -129,10 +131,11 @@ diamonds.</p>
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>A SpatialPointsDataFrame with [] and [] attributes.</p><dl'>
-<dt>z_1</dt><dd><p>The first attribute.</p></dd>
-<dt>z_2</dt><dd><p>The second attribute.</p></dd>
-...
+    <p>A dataframe containing the sample positions and attributes.</p><dl'>
+<dt>s_1</dt><dd><p>The first spatial coordinate.</p></dd>
+<dt>z_1</dt><dd><p>The first attribute simulated with a range parameter of 1</p></dd>
+<dt>z_50</dt><dd><p>The second attribute simulated with a range parameter of 50</p></dd>
+<dt>z_100</dt><dd><p>The second attribute simulated with a range parameter of 100</p></dd>
 
 </dl>
     

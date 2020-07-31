@@ -20,3 +20,4 @@ A dataframe with two columns, r and c, that correspond to row and column indices
 Note that input coordinates must be spatially aligned vertically and horizontally. This
 may not always be the case, e.g. for some spatial projections that curve geographic space.
 }
+\keyword{internal}

@@ -126,6 +126,8 @@ subsample_hex_ix <- function(hex_ix, start_pos, a) {
 #' of hexagonal neighborhoods
 #' 
 #' @param ix A dataframe of hexagonal indices
+#' @return A dataframe of hexagonal neigborhood centers
+#' @keywords internal
 subsample_hex_ix_compact <- function(ix) {
   max_r <- max(max(ix$r), 14)
   max_c <- max(max(ix$c), 14)

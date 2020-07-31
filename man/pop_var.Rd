@@ -11,3 +11,4 @@ pop_var(z)
 Calculate the variance using a denominator of n
 instead of n-1
 }
+\keyword{internal}

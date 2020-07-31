@@ -2,12 +2,21 @@
 % Please edit documentation in R/neighborhoods.R
 \name{get_hex_neighborhoods}
 \alias{get_hex_neighborhoods}
-\title{For some input set of neighborhood center points
-return all immediate hexagonal neighbors.}
+\title{Retrieves all immediate hexagonal neighbors.}
 \usage{
 get_hex_neighborhoods(centers, contrasts = c(1, 1, 1, 0, -1, -1, -1))
 }
-\description{
-For some input set of neighborhood center points
-return all immediate hexagonal neighbors.
+\arguments{
+\item{centers}{A dataframe indicating the index locations of the neighborhood
+centers}
+
+\item{contrasts}{A vector of contrasts to attach to each neighborhood}
 }
+\value{
+A dataframe with columns \code{r_n}, \code{c_n} and \code{contr} corresponding to
+the neighbor row position, column position and contrast value
+}
+\description{
+Retrieves all immediate hexagonal neighbors.
+}
+\keyword{internal}

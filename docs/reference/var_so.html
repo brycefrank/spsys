@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator. — var_so • spsys</title>
+<title>Internal function used to compute the Stevens and Olsen (2003) variance estimate. — var_so • spsys</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -44,11 +43,9 @@ sample using the Stevens and Olsen (2003) local mean estimator. — var_so • s
 
 
 
-<meta property="og:title" content="Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator. — var_so" />
+<meta property="og:title" content="Internal function used to compute the Stevens and Olsen (2003) variance estimate. — var_so" />
 
-<meta property="og:description" content="Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator." />
+<meta property="og:description" content="Internal function used to compute the Stevens and Olsen (2003) variance estimate." />
 
 <meta property="og:image" content="/logo.png" />
 
@@ -115,21 +112,44 @@ sample using the Stevens and Olsen (2003) local mean estimator." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator.</h1>
+    <h1>Internal function used to compute the Stevens and Olsen (2003) variance estimate.</h1>
     
     <div class="hidden name"><code>var_so.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator.</p>
+    <p>Internal function used to compute the Stevens and Olsen (2003) variance estimate.</p>
     
     </div>
 
     <pre class="usage"><span class='fu'>var_so</span>(<span class='no'>sys_frame</span>, <span class='no'>...</span>)</pre>
-        
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>sys_frame</th>
+      <td><p>A <code>SysFrame</code> object</p></td>
+    </tr>
+    <tr>
+      <th>fpc</th>
+      <td><p>If TRUE, use the finite population correction factor</p></td>
+    </tr>
+    <tr>
+      <th>diagnostic</th>
+      <td><p>If TRUE return diagnostic information, else return only the variance estimate</p></td>
+    </tr>
+    <tr>
+      <th>coord_cols</th>
+      <td><p>A named vector of coordinate columns</p></td>
+    </tr>
+    <tr>
+      <th>nbh</th>
+      <td><p>An integer representing the number of neighbors to use in the variance estimate</p></td>
+    </tr>
+    </table>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

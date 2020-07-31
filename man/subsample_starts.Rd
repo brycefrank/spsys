@@ -2,11 +2,13 @@
 % Please edit documentation in R/subsample.R
 \name{subsample_starts}
 \alias{subsample_starts}
-\title{For a given sampling interval, return the set of all possible starting positions}
+\title{Retrieve the set of all possible starting positions}
 \usage{
 subsample_starts(sys_frame, a)
 }
 \arguments{
+\item{sys_frame}{A \code{SysFrame} object}
+
 \item{a}{The sampling interval}
 }
 \value{
@@ -14,5 +16,9 @@ A dataframe of starting positions for all possible systematic samples
 for the interval a.
 }
 \description{
-For a given sampling interval, return the set of all possible starting positions
+In two-dimensional systematic samples, all possible samples can be obtained
+merely by moving the starting position within a "starting region" contained
+by the top-left-most sample group. For a sampling interveal \code{a} the hexagonal
+and rectangular configurations will contain \code{a^2} possible samples. This function
+retrieves those starting positions and is used internally as part of \code{compare_estimators()}.
 }

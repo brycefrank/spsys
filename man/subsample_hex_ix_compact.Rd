@@ -2,14 +2,19 @@
 % Please edit documentation in R/subsample.R
 \name{subsample_hex_ix_compact}
 \alias{subsample_hex_ix_compact}
-\title{There is a way to subsample a set of hexagonal
-indices such that we obtain a compact set of
-neighborhoods. Implemented here.}
+\title{Retrieves a subset of indices that correspond to the center of a compact set
+of hexagonal neighborhoods}
 \usage{
 subsample_hex_ix_compact(ix)
 }
-\description{
-There is a way to subsample a set of hexagonal
-indices such that we obtain a compact set of
-neighborhoods. Implemented here.
+\arguments{
+\item{ix}{A dataframe of hexagonal indices}
 }
+\value{
+A dataframe of hexagonal neigborhood centers
+}
+\description{
+Retrieves a subset of indices that correspond to the center of a compact set
+of hexagonal neighborhoods
+}
+\keyword{internal}

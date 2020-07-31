@@ -142,43 +142,21 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="get_hex_neighborhoods.html">get_hex_neighborhoods()</a></code> </p>
-        </td>
-        <td><p>For some input set of neighborhood center points
-return all immediate hexagonal neighbors.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_mat_hex_neighborhoods.html">get_mat_hex_neighborhoods()</a></code> </p>
-        </td>
-        <td><p>The Matern estimator does not use 'centers' per se
-but rather 'anchors'. Also, a set of contrasts is needed
-for each neighborhood.</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="HexFrame.html">HexFrame()</a></code> </p>
         </td>
         <td><p>Hexagonal sampling frame</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="index_hex_polys.html">index_hex_polys()</a></code> </p>
+          <p><code><a href="hex_pts.html">hex_pts</a></code> </p>
         </td>
-        <td><p>Creates a dataframe of hexagon indices for use in <code>subsample_hex</code></p></td>
+        <td><p>Simulated data arranged in a hexagonal grid.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="index_sq.html">index_sq()</a></code> </p>
+          <p><code><a href="RectFrame.html">RectFrame()</a></code> </p>
         </td>
-        <td><p>Creates a dataframe of hexagon indices for use in <code>subsample_sq</code>.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="pop_var.html">pop_var()</a></code> </p>
-        </td>
-        <td><p>Calculate the variance using a denominator of n
-instead of n-1</p></td>
+        <td><p>Rectangular sampling frame</p></td>
       </tr><tr>
         
         <td>
@@ -188,46 +166,21 @@ instead of n-1</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="so_att.html">so_att()</a></code> </p>
-        </td>
-        <td><p>Computes the Stevens and Olsen estimator for a specific attribute.
-Used internally with var_so function.</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="subsample.html">subsample()</a></code> </p>
         </td>
-        <td><p>Subsamples a dataframe of hexagonal indices produced by the <code>index_hex</code> function.
-For some specified starting index and sampling interval, subsamples a hexagonal index
-set such that the spatial structure is preserved, i.e. subsamples also retain a
-hexagonal structure.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="subsample_hex_ix_compact.html">subsample_hex_ix_compact()</a></code> </p>
-        </td>
-        <td><p>There is a way to subsample a set of hexagonal
-indices such that we obtain a compact set of
-neighborhoods. Implemented here.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="subsample_hex_ix_ov.html">subsample_hex_ix_ov()</a></code> </p>
-        </td>
-        <td><p>Creates a set of indices such that their nearest
-neighbors create the overlapping structure</p></td>
+        <td><p>Create a systematic sample from an existing <code>SysFrame</code></p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="subsample_starts.html">subsample_starts()</a></code> </p>
         </td>
-        <td><p>For a given sampling interval, return the set of all possible starting positions</p></td>
+        <td><p>Retrieve the set of all possible starting positions</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="transform_coords.html">transform_coords()</a></code> </p>
+          <p><code><a href="SysFrame.html">SysFrame()</a></code> </p>
         </td>
-        <td><p>Transforms a set of population unit coordinates to an integer index.</p></td>
+        <td><p>Base class for systematic sampling frames</p></td>
       </tr><tr>
         
         <td>
@@ -277,13 +230,6 @@ neighbors create the overlapping structure</p></td>
           <p><code><a href="VarSYS.html">VarSYS()</a></code> </p>
         </td>
         <td><p>Systematic variance</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="var_so.html">var_so()</a></code> </p>
-        </td>
-        <td><p>Computes the variance estimate of a systematic
-sample using the Stevens and Olsen (2003) local mean estimator.</p></td>
       </tr>
     </tbody>
     </table>

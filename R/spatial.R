@@ -39,6 +39,7 @@ setMethod('neighborhood_matrix', signature(sys_frame='RectFrame'),
 #' the immediate neighbors, 2 represents the next 'layer' of neighbors and so on. For `RectFrame` 1 represents
 #' the NESW neighbors, 2 represents the 8 nearest neighbors plus four next-nearest NESW neighbors and so on.
 #' @return A named vector of Geary's C values for each attribute
+#' @keywords internal
 setGeneric('gearys_c', function(sys_frame, ...) {
   standardGeneric('gearys_c')
 })
@@ -84,6 +85,7 @@ setMethod('gearys_c', signature(sys_frame='SysFrame'),
 #' the immediate neighbors, 2 represents the next 'layer' of neighbors and so on. For `RectFrame` 1 represents
 #' the NESW neighbors, 2 represents the 8 nearest neighbors plus four next-nearest NESW neighbors and so on.
 #' @return A named vector of Moran's C values for each attribute
+#' @keywords internal
 setGeneric('morans_i', function(sys_frame, ...) {
   standardGeneric('morans_i')
 })

@@ -2,26 +2,22 @@
 % Please edit documentation in R/HexFrame.R
 \name{subsample}
 \alias{subsample}
-\title{Subsamples a dataframe of hexagonal indices produced by the \code{index_hex} function.
-For some specified starting index and sampling interval, subsamples a hexagonal index
-set such that the spatial structure is preserved, i.e. subsamples also retain a
-hexagonal structure.}
+\title{Create a systematic sample from an existing \code{SysFrame}}
 \usage{
-subsample(object, start_pos, a, standardize = TRUE)
+subsample(object, start_pos, a)
 }
 \arguments{
-\item{start_pos}{the starting position}
+\item{object}{A \code{SysFrame} from which to sample}
 
-\item{a}{The order of the subset: 2 represents sampling every other}
+\item{start_pos}{A numeric vector of two elements indicating the starting position}
 
-\item{hex_ix}{A dataframe of hex indices from the \code{index_hex} function.}
+\item{a}{The sampling interval}
 }
 \value{
-A dataframe of row and column indices that have been sampled.
+A new \code{SysFrame} object that contains only the sampled elements
 }
 \description{
-Subsamples a dataframe of hexagonal indices produced by the \code{index_hex} function.
-For some specified starting index and sampling interval, subsamples a hexagonal index
-set such that the spatial structure is preserved, i.e. subsamples also retain a
-hexagonal structure.
+Creates a systematic sample from a \code{SysFrame} for a specified starting position
+and sampling interval. Typically used to conduct variance assessments, e.g. as a part of
+\code{compare_estimators()}.
 }
