@@ -2,19 +2,14 @@
 # variance estimators
 library(Rfast)
 
-setGeneric('distance_matrix', function(sys_frame, ...) {
-  standardGeneric('distance_matrix')
-})
-
-setMethod('distance_matrix', signature(sys_frame='SysFrame'),
-  function(sys_frame) {
-    D <- Dist(sys_frame@coords)
-    diag(D) <- 0
-    return(W)
-  }
-)
-
-# TODO maybe 'proximity' matrix is more clear, refactor
+#' Create the binary neigborhood matrix for D'Orazio's estimators
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param order An integer representing the neighborhood order. For `HexFrame` 1 represents 
+#' the immediate neighbors, 2 represents the next 'layer' of neighbors and so on. For `RectFrame` 1 represents
+#' the NESW neighbors, 2 represents the 8 nearest neighbors plus four next-nearest NESW neighbors and so on.
+#' @return
+#' @keywords internal
 setGeneric('neighborhood_matrix', function(sys_frame, ...) {
   standardGeneric('neighborhood_matrix')
 })
@@ -37,6 +32,13 @@ setMethod('neighborhood_matrix', signature(sys_frame='RectFrame'),
   }
 )
 
+#' Retrieve the Geary's C for a given `SysFrame`
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param order An integer representing the neighborhood order. For `HexFrame` 1 represents 
+#' the immediate neighbors, 2 represents the next 'layer' of neighbors and so on. For `RectFrame` 1 represents
+#' the NESW neighbors, 2 represents the 8 nearest neighbors plus four next-nearest NESW neighbors and so on.
+#' @return A named vector of Geary's C values for each attribute
 setGeneric('gearys_c', function(sys_frame, ...) {
   standardGeneric('gearys_c')
 })
@@ -68,11 +70,20 @@ setMethod('gearys_c', signature(sys_frame='SysFrame'),
     denominator <- 2 * sum(W) * colSums((sweep(att_df, 2, colMeans(att_df))^2))
     C <- ((n-1) * numerator) / denominator
     C <- as.vector(C)
+    names(C) <- sys_frame@attributes
     
     return(C)
   }
 )
 
+
+#' Retrieve the Moran's I for a given `SysFrame`
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param order An integer representing the neighborhood order. For `HexFrame` 1 represents 
+#' the immediate neighbors, 2 represents the next 'layer' of neighbors and so on. For `RectFrame` 1 represents
+#' the NESW neighbors, 2 represents the 8 nearest neighbors plus four next-nearest NESW neighbors and so on.
+#' @return A named vector of Moran's C values for each attribute
 setGeneric('morans_i', function(sys_frame, ...) {
   standardGeneric('morans_i')
 })
@@ -99,6 +110,7 @@ setMethod('morans_i', signature(sys_frame='SysFrame'),
     denominator <- colSums(((sweep(att_df, 2, colMeans(att_df)))^2))
     morans_I <- (n / sum(W)) * (numerator / denominator)
     morans_I <- as.vector(morans_I)
+    names(morans_I) <- sys_frame@attributes
     
     return(morans_I)
   }

@@ -1,5 +1,15 @@
-#' For a given sampling interval, return the set of all possible starting positions
+# Various functions for creating subsets of sampling frames used for assessment
+# and to create neighborhood centers and anchors.
+
+#' Retrieve the set of all possible starting positions
 #' 
+#' In two-dimensional systematic samples, all possible samples can be obtained
+#' merely by moving the starting position within a "starting region" contained
+#' by the top-left-most sample group. For a sampling interveal `a` the hexagonal
+#' and rectangular configurations will contain `a^2` possible samples. This function
+#' retrieves those starting positions and is used internally as part of `compare_estimators()`.
+#' 
+#' @param sys_frame A `SysFrame` object
 #' @param a The sampling interval
 #' @return  A dataframe of starting positions for all possible systematic samples 
 #' for the interval a.
@@ -43,6 +53,7 @@ setMethod('subsample_starts', signature = list(sys_frame='HexFrame', a='numeric'
 #' @param d_x The distance between points in the x dimension
 #' @param d_y The distance between points in the y dimension
 #' @return A dataframe with two columns, r and c, that correspond to row and column indices
+#' @keywords internal
 transform_coords <- function(coords, d_x=NA, d_y=NA) {
   x_shift <- coords[,1] - min(coords[,1])
   y_shift <- coords[,2] - max(coords[,2])
@@ -72,28 +83,13 @@ transform_coords <- function(coords, d_x=NA, d_y=NA) {
   
 }
 
-#' Creates a dataframe of hexagon indices for use in `subsample_sq`.
+#' Retrieves the subsample for a given set of hexagonal indices
 #' 
-#' @param square_polys A SpatialPolygonsDataFrame of a square grid.
-#' @return A dataframe with two columns, r and c, that correspond to row and column indices
-#' of the hexagon grid.
-index_sq <- function(square_polys) {
-  square_polys@polygons[[1]]@Polygons
-  
-  top_points <- matrix(0, nrow=length(square_polys@polygons), ncol=2)
-  i <- 1
-  for(polygon in square_polys@polygons) {
-    poly_coords <- polygon@Polygons[[1]]@coords
-    max_y_ix <- which(poly_coords[,2] == max(poly_coords[,2]))[[1]]
-    top_points[i,] <- poly_coords[max_y_ix,]
-    i <- i + 1
-  }
-  
-  sq_ix <- transform_coords(top_points)
-  return(sq_ix)
-  
-}
-
+#' @param hex_ix A dataframe of hexagonal indices
+#' @param start_pos A starting position
+#' @param a A sampling interval
+#' @return A dataframe of sample indices
+#' @keywords internal
 subsample_hex_ix <- function(hex_ix, start_pos, a) {
   max_r <- max(hex_ix$r)
   max_c <- max(hex_ix$c)
@@ -126,9 +122,10 @@ subsample_hex_ix <- function(hex_ix, start_pos, a) {
 }
 
 
-#' There is a way to subsample a set of hexagonal
-#' indices such that we obtain a compact set of 
-#' neighborhoods. Implemented here.
+#' Retrieves a subset of indices that correspond to the center of a compact set 
+#' of hexagonal neighborhoods
+#' 
+#' @param ix A dataframe of hexagonal indices
 subsample_hex_ix_compact <- function(ix) {
   max_r <- max(max(ix$r), 14)
   max_c <- max(max(ix$c), 14)
@@ -155,29 +152,13 @@ subsample_hex_ix_compact <- function(ix) {
   samp_ix
 }
 
-#' Creates a set of indices such that their nearest
-#' neighbors create the overlapping structure
-subsample_hex_ix_ov <- function(ix) {
-  max_r <- max(max(ix$r), 2)
-  max_c <- max(max(ix$c), 6)
-  
-  r_seq <- seq(0, max_r, 2)
-  c_seq <- seq(0, max_c, 6)
-  primary_grid <- expand.grid(r_seq, c_seq)
-  
-  secondary_grid <- primary_grid
-  secondary_grid[,1] <- secondary_grid[,1] + 1
-  secondary_grid[,2] <- secondary_grid[,2] + 3
-  
-  samp_ix <- rbind(primary_grid, secondary_grid)
-  
-  # Bump over to (1,1) origin
-  samp_ix <- samp_ix + 1
-  colnames(samp_ix) <- c('r', 'c')
-  
-  return(samp_ix)
-}
-
+#' Retrieves the subsample for a given set of rectangular indices
+#' 
+#' @param ix A dataframe of hexagonal indices
+#' @param start_pos A starting position
+#' @param a A sampling interval
+#' @return A dataframe of sample indices
+#' @keywords internal
 subsample_rect_ix <- function(ix, start_pos, a) {
   max_r <- max(ix$r)
   max_c <- max(ix$c)

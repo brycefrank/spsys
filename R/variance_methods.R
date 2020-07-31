@@ -1,6 +1,12 @@
 library(spsurvey)
 library(tidyr)
 
+#' Internal function used to compute the simple random sampling variance estimate.
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param fpc If TRUE, use the finite population correction factor
+#' @param diagnostic If TRUE return diagnostic information, else return only the variance estimate
+#' @keywords internal
 setGeneric('var_srs', function(sys_frame, ...) {
   standardGeneric('var_srs')
 })
@@ -32,6 +38,11 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
   }
 )
 
+#' Internal function used to compute the systematic variance.
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param a The sampling interval
+#' @keywords internal
 setGeneric('var_sys', function(sys_frame, ...){
   standardGeneric('var_sys')
 })
@@ -57,8 +68,14 @@ setMethod('var_sys', signature(sys_frame='SysFrame'),
   }
 )
 
-#' Computes the variance estimate of a systematic 
-#' sample using the Stevens and Olsen (2003) local mean estimator.
+#' Internal function used to compute the Stevens and Olsen (2003) variance estimate.
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param fpc If TRUE, use the finite population correction factor
+#' @param diagnostic If TRUE return diagnostic information, else return only the variance estimate
+#' @param coord_cols A named vector of coordinate columns
+#' @param nbh An integer representing the number of neighbors to use in the variance estimate
+#' @keywords internal
 setGeneric('var_so', function(sys_frame, ...){
   standardGeneric('var_so')
 })
@@ -109,6 +126,13 @@ so_att <- function(att, att_df, pi_i, wt) {
   localmean.var(z/pi_i, wt)
 }
 
+#' Internal function used to compute the Matèrn (1986) variance estimate.
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param fpc If TRUE, use the finite population correction factor
+#' @param diagnostic If TRUE return diagnostic information, else return only the variance estimate
+#' @param nbh For `HexFrames` either 'par' or 'hex', for `RectFrames` only `par` is supported
+#' @keywords internal
 setGeneric('var_mat', function(sys_frame, ...) {
   standardGeneric('var_mat')
 })
@@ -233,6 +257,14 @@ weight_var <- function(var, q_j, fpc, N_neighbs) {
   (1/N_neighbs)^2 * (var / q_j) * fpc
 }
 
+
+#' Internal function used to compute the non-overlapping variance estimate.
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param fpc If TRUE, use the finite population correction factor
+#' @param diagnostic If TRUE return diagnostic information, else return only the variance estimate
+#' @param nbh For `HexFrames` either 'par' or 'hex' or 'tri', for `RectFrames` only `par` is supported
+#' @keywords internal
 setGeneric('var_non_overlap', function(sys_frame, ...) {
   standardGeneric('var_non_overlap')
 })
@@ -348,6 +380,13 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
   }
 )
 
+#' Internal function used to compute the D'Orazio's - C variance estimate.
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param fpc If TRUE, use the finite population correction factor
+#' @param diagnostic If TRUE return diagnostic information, else return only the variance estimate
+#' @param order The neighborhood order. 1 represents the immediate neighbors
+#' @keywords internal
 setGeneric('var_dorazio_c', function(sys_frame, ...) {
   standardGeneric('var_dorazio_c')
 })
@@ -366,6 +405,14 @@ setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'),
   }
 )
 
+
+#' Internal function used to compute the D'Orazio's - I variance estimate.
+#' 
+#' @param sys_frame A `SysFrame` object
+#' @param fpc If TRUE, use the finite population correction factor
+#' @param diagnostic If TRUE return diagnostic information, else return only the variance estimate
+#' @param order The neighborhood order. 1 represents the immediate neighbors
+#' @keywords internal
 setGeneric('var_dorazio_i', function(sys_frame, ...) {
   standardGeneric('var_dorazio_i')
 })

@@ -3,6 +3,15 @@ library(sp)
 setClass('SysFrame', contains='SpatialPointsDataFrame',
          slots=list(attributes="character"))
 
+#' Base class for systematic sampling frames
+#' 
+#' `SysFrame` represents a generic systematic sampling frame. Nearly all users will want to use the sub-classes `HexFrame()`
+#'  or `RectFrame()` corresponding to hexagonal and rectangular sampling frames, respectively.
+#' 
+#' @param attributes A character vector indicating the columns that will be treated as attributes, i.e.
+#' the response variables at each sample position
+#' @return An object of class `SysFrame`
+#' @export
 SysFrame <- function(splydf, attributes=character()) {
   sys_frame <- new('SysFrame')
   sys_frame@data <- splydf@data

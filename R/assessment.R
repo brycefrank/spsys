@@ -1,8 +1,30 @@
-#' Using subsampling, assess a series of variance estimators.
-#'
-#'@param sys_frame
-#'@param a_vec
-#'@param estimators
+#' Compare variance estimators via simulation
+#' 
+#' This function accepts a `SysFrame` that is treated as a population. All possible
+#' systematic samples for a given sampling interval are made and all estimators specified
+#' in `estimators` are used to estimate the variance for that sample. The variance estimates
+#' for each sample are returned along with other information, e.g. the population means, variances
+#' etc.
+#' 
+#' The outputs of this function can be used to create mean squared errors, biases and other
+#' assessments of the estimators.
+#' 
+#' @param sys_frame A population from which to sample
+#' @param a_vec A vector of integers representing the sampling intervals desired for assessment
+#' @param estimators A named list of constructed estimator functions
+#' @return A named list containing three dataframes
+#' \itemize{
+#' \item `'est_frame'` - A dataframe of the variance estimates
+#' \item `'pop_frame'` - A dataframe of population parameters
+#' \item `'sys_frame'` - A dataframe of true systematic variances
+#' }
+#' @example 
+#' estimators <- list(
+#'    'var_srs' = VarSRS(),
+#'    'var_so' = VarS()
+#' )
+#' compare_estimators(hex_frame, c(4), estimators)
+#' @export
 compare_estimators <- function(sys_frame, a_vec, estimators) {
   N <- nrow(sys_frame)
   mu <- colMeans(sys_frame@data[,sys_frame@attributes, drop=FALSE])

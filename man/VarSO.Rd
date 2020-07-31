@@ -2,7 +2,7 @@
 % Please edit documentation in R/VarEst.R
 \name{VarSO}
 \alias{VarSO}
-\title{Neighborhood-based estimator from \insertCite{stevens_variance_2003;textual}{spsys}.}
+\title{Neighborhood-based estimator from \insertCite{stevens_variance_2003;textual}{spsys}}
 \usage{
 VarSO(fpc = FALSE, diagnostic = FALSE, coord_cols = NA, nbh = 4)
 }

@@ -6,6 +6,24 @@ setClass('RectFrame', contains='SysFrame',
            N='numeric'
          ))
 
+#' Rectangular sampling frame
+#' 
+#' `RectFrame` represents sampling positions oriented in a rectangular pattern. 
+#' All `RectFrame`s must be constructed from an existing `sp::SpatialPointsDataFrame` that represents
+#' the sample positions and contains their observation values.
+#' 
+#' @param attributes A character vector indicating the columns that will be treated as attributes, i.e.
+#' the response variables at each sample position
+#' @param index An optional dataframe that manually specifies the row and column indices
+#' @param a The sampling interval at which the systematic sample was collected originally. Typically set
+#' internally by `subsample`
+#' @param N The population size
+#' @param d_x The distance between points in the x dimension
+#' @param d_y The distance between points in the y dimension
+#' @return An object of class `RectFrame`
+#' @example 
+#' hex_frame <- RectFrame(rect_pts, attributes=c('z_1'))
+#' @export
 RectFrame <- function(splydf, attributes=character(), index=NA, N=Inf, a=1, d_x=NA, d_y=NA) {
   sys_frame <- SysFrame(splydf, attributes)
   

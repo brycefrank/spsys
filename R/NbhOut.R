@@ -9,8 +9,7 @@ setClass('NbhOut', contains='VarOut', slots=list(
   name='character'
 ))
 
-#' Class that contains the diagnostic output of neighborhood-based
-#' estimators.
+#' Contains the diagnostic output of neighborhood-based estimators
 #' 
 #' @param estimate A named vector of variance estimates
 #' @param neighborhoods A dataframe of neighborhood groupings and values, estimator dependent

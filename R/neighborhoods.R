@@ -1,7 +1,13 @@
 # Methods for constructing neighborhoods
 
-#' For some input set of neighborhood center points
-#' return all immediate hexagonal neighbors.
+#' Retrieves all immediate hexagonal neighbors.
+#' 
+#' @param centers A dataframe indicating the index locations of the neighborhood
+#' centers
+#' @param contrasts A vector of contrasts to attach to each neighborhood
+#' @return A dataframe with columns `r_n`, `c_n` and `contr` corresponding to
+#' the neighbor row position, column position and contrast value
+#' @keywords internal
 get_hex_neighborhoods <- function(centers, contrasts=c(1,1,1,0,-1,-1,-1)) {
   neighborhoods <- list()
   for(i in 1:nrow(centers)) {
@@ -24,9 +30,16 @@ get_hex_neighborhoods <- function(centers, contrasts=c(1,1,1,0,-1,-1,-1)) {
   return(neighborhoods)
 }
 
-#' The Matern estimator does not use 'centers' per se
-#' but rather 'anchors'. Also, a set of contrasts is needed
-#' for each neighborhood.
+#' Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+#' as inputs. This is used internally to retrieve the paralellogram neighborhoods
+#' for `HexFrame`s
+#' 
+#' @param anchors A dataframe indicating the index locations of the neighborhood, which is
+#' the top/left point of the neighborhood
+#' @param contrasts A vector of contrasts to attach to each neighborhood
+#' @return A dataframe with columns `r_n`, `c_n` and `contr` corresponding to
+#' the neighbor row position, column position and contrast value
+#' @keywords internal
 get_mat_hex_neighborhoods <- function(anchors, contrasts=c(1,1,-1,-1)) {
   neighborhoods <- list()
   for(i in 1:nrow(anchors)) {
@@ -49,15 +62,27 @@ get_mat_hex_neighborhoods <- function(anchors, contrasts=c(1,1,-1,-1)) {
   return(neighborhoods)
 }
 
-get_rect_neighborhoods <- function(centers) {
+
+# TODO not sure if this is linked to anything?
+#' Retrieves a 3x3 window neighborhood structure with a set of 'anchors'
+#' as inputs. This is used internally to retrieve the paralellogram neighborhoods
+#' for `RectFrame`s
+#' 
+#' @param centers A dataframe indicating the index locations of the neighborhood, which is
+#' the top/left point of the neighborhood
+#' @return A dataframe with columns `r_n`, `c_n` and `contr` corresponding to
+#' the neighbor row position, column position and contrast value
+#' @keywords internal
+get_rect_neighborhoods <- function(centers, contrasts=c(1,1,-1,1,0,-1,1,-1,-1)) {
   neighborhoods <- list()
   for(i in 1:nrow(centers)) {
     row <- centers[i, 1]
     col <- centers[i, 2]
-    neighborhood <- matrix(NA, nrow=9, ncol=2)
+    neighborhood <- matrix(NA, nrow=9, ncol=3)
     
     neighborhood[,1] <- c(row-1, row-1, row-1, row, row, row, row+1, row+1, row+1)
     neighborhood[,2] <- c(col-1, col, col+1, col-1, col, col+1, col-1, col, col+1)
+    neighborhood[,3] <- contrasts
     
     neighborhood <- data.frame(neighborhood)
     neighborhood$r <- row
@@ -65,12 +90,22 @@ get_rect_neighborhoods <- function(centers) {
     neighborhoods[[i]] <- neighborhood
   }
   neighborhoods <- bind_rows(neighborhoods)
-  colnames(neighborhoods)[1:2]  <- c('r_n', 'c_n')
+  colnames(neighborhoods)[1:3]  <- c('r_n', 'c_n', 'contr')
   
   return(neighborhoods)
   
 }
 
+#' Retrieves a paralellogram neighborhood structure with a set of 'anchors'
+#' as inputs. This is used internally to retrieve the paralellogram neighborhoods
+#' for `RectFrame`s
+#' 
+#' @param anchors A dataframe indicating the index locations of the neighborhood, which is
+#' the top/left point of the neighborhood
+#' @param contrasts A vector of contrasts to attach to each neighborhood
+#' @return A dataframe with columns `r_n`, `c_n` and `contr` corresponding to
+#' the neighbor row position, column position and contrast value
+#' @keywords internal
 get_mat_rect_neighborhoods <- function(anchors, contrasts) {
   neighborhoods <- list()
   for(i in 1:nrow(anchors)) {
@@ -93,6 +128,15 @@ get_mat_rect_neighborhoods <- function(anchors, contrasts) {
   return(neighborhoods)
 }
 
+#' Retrieves a triangular neighborhood structure with a set of 'tops' and 'bottoms'
+#' as inputs. This is used internally to retrieve the triangular neigborhoods for
+#' `HexFrame`s
+#' 
+#' @param tops The index positions of triangle tops
+#' @param bottoms The index positions of triangle bottoms
+#' @return A dataframe with columns `r_n`, `c_n` and `contr` corresponding to
+#' the neighbor row position, column position and contrast value
+#' @keywords internal
 get_tri_neighborhoods <- function(tops, bottoms) {
   neighborhoods <- matrix(NA, nrow=nrow(tops)*6, ncol=4)
   for(i in 1:nrow(tops)) {
@@ -115,6 +159,12 @@ get_tri_neighborhoods <- function(tops, bottoms) {
   return(neighborhoods)
 }
 
+#' Retrieves the triangular neighborhoods for a given `HexFrame`
+#' 
+#' @param hex_frame The `HexFrame` to retrieve the neighborhoods from
+#' @return A dataframe with columns `r_n` and `c_n` corresponding to
+#' the neighbor row position and column position.
+#' @keywords internal
 setGeneric('neighborhoods_tri', function(hex_frame) {
   standardGeneric('neighborhoods_tri')
 })
@@ -156,21 +206,15 @@ setMethod('neighborhoods_tri', signature(hex_frame='HexFrame'),
 )
 
 
-setGeneric('neighborhoods_ov', function(sys_frame, ...) {
-  standardGeneric('neighborhoods_ov')
-})
-
-
-setMethod('neighborhoods_ov', signature(sys_frame='HexFrame'),
-  function(sys_frame) {
-    ix <- sys_frame@data[,c('r', 'c')]
-    centers <- subsample_hex_ix_ov(ix)
-    neighbors <- get_hex_neighborhoods(centers)
-    return(neighbors)
-  }
-)
-
-
+#' Retrieves the non-overlapping neighborhoods for a given `SysFrame`
+#' 
+#' For `HexFrame` these are hexagonal neighborhoods
+#' For `RectFrame` these are 3x3 neighborhoods
+#' 
+#' @param hex_frame The `HexFrame` to retrieve the neighborhoods from
+#' @return A dataframe with columns `r_n`, `c_n` and `contr` corresponding to
+#' the neighbor row position, column position and contrast value.
+#' @keywords internal
 setGeneric('neighborhoods_non', function(sys_frame, ...) {
   standardGeneric('neighborhoods_non')
 })
@@ -189,11 +233,20 @@ setMethod('neighborhoods_non', signature(sys_frame='RectFrame'),
   function(sys_frame) {
     ix <- sys_frame@data[,c('r', 'c')]
     centers <- subsample_rect_ix(ix, c(1,1), 3)
-    neighbors <- get_rect_neighborhoods(centers)
+    neighbors <- get_rect_neighborhoods(centers, c(1,1,-1,1,0,-1,1,-1,-1))
     return(neighbors)
   }
 )
 
+#' Retrieves the paralellogram neighborhoods for a given `SysFrame`
+#' 
+#' For `HexFrame` these are "rhombus" neighborhoods
+#' For `RectFrame` these are 3x3 neighborhoods
+#' 
+#' @param hex_frame The `HexFrame` to retrieve the neighborhoods from
+#' @return A dataframe with columns `r_n`, `c_n` and `contr` corresponding to
+#' the neighbor row position, column position and contrast value.
+#' @keywords internal
 setGeneric('neighborhoods_par', function(sys_frame, ...) {
   standardGeneric('neighborhoods_par')
 })

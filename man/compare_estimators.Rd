@@ -2,10 +2,33 @@
 % Please edit documentation in R/assessment.R
 \name{compare_estimators}
 \alias{compare_estimators}
-\title{Using subsampling, assess a series of variance estimators.}
+\title{Compare variance estimators via simulation}
 \usage{
 compare_estimators(sys_frame, a_vec, estimators)
 }
+\arguments{
+\item{sys_frame}{A population from which to sample}
+
+\item{a_vec}{A vector of integers representing the sampling intervals desired for assessment}
+
+\item{estimators}{A named list of constructed estimator functions}
+}
+\value{
+A named list containing three dataframes
+\itemize{
+\item \code{'est_frame'} - A dataframe of the variance estimates
+\item \code{'pop_frame'} - A dataframe of population parameters
+\item \code{'sys_frame'} - A dataframe of true systematic variances
+}
+}
 \description{
-Using subsampling, assess a series of variance estimators.
+This function accepts a \code{SysFrame} that is treated as a population. All possible
+systematic samples for a given sampling interval are made and all estimators specified
+in \code{estimators} are used to estimate the variance for that sample. The variance estimates
+for each sample are returned along with other information, e.g. the population means, variances
+etc.
+}
+\details{
+The outputs of this function can be used to create mean squared errors, biases and other
+assessments of the estimators.
 }

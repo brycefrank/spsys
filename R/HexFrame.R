@@ -7,7 +7,24 @@ setClass('HexFrame', contains='SysFrame',
            N='numeric'
          ))
 
-HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE, a=1, N=Inf) {
+
+#' Hexagonal sampling frame
+#' 
+#' `HexFrame` represents sampling positions oriented in a hexagonal (or triangular) pattern. 
+#' All `HexFrame`s must be constructed from an existing `sp::SpatialPointsDataFrame` that represents
+#' the sample positions and contains their observation values.
+#' 
+#' @param attributes A character vector indicating the columns that will be treated as attributes, i.e.
+#' the response variables at each sample position
+#' @param index An optional dataframe that manually specifies the row and column indices
+#' @param a The sampling interval at which the systematic sample was collected originally. Typically set
+#' internally by `subsample`
+#' @param N The population size
+#' @return An object of class `HexFrame`
+#' @example 
+#' hex_frame <- HexFrame(hex_pts, attributes=c('z_1'))
+#' @export
+HexFrame <- function(splydf, attributes=character(), index=NA, a=1, N=Inf) {
   sys_frame <- SysFrame(splydf, attributes)
   
   hex_frame <- new('HexFrame')
@@ -55,16 +72,20 @@ HexFrame <- function(splydf, attributes=character(), index=NA, standardize=TRUE,
   hex_frame
 }
 
-#' Subsamples a dataframe of hexagonal indices produced by the `index_hex` function.
-#' For some specified starting index and sampling interval, subsamples a hexagonal index 
-#' set such that the spatial structure is preserved, i.e. subsamples also retain a
-#' hexagonal structure.
+#' Create a systematic sample from an existing `SysFrame`
 #' 
-#' @param hex_ix A dataframe of hex indices from the `index_hex` function.
-#' @param start_pos the starting position
-#' @param a The order of the subset: 2 represents sampling every other
-#' @return A dataframe of row and column indices that have been sampled.
-setGeneric('subsample', function(object, start_pos, a, standardize=TRUE){
+#' Creates a systematic sample from a `SysFrame` for a specified starting position
+#' and sampling interval. Typically used to conduct variance assessments, e.g. as a part of
+#' `compare_estimators()`.
+#' 
+#' @param object A `SysFrame` from which to sample
+#' @param start_pos A numeric vector of two elements indicating the starting position
+#' @param a The sampling interval
+#' @return A new `SysFrame` object that contains only the sampled elements
+#' @example 
+#' samp <- subsample(hex_frame, c(1,1), 3)
+#' @export
+setGeneric('subsample', function(object, start_pos, a){
   standardGeneric('subsample')
 })
 
@@ -97,27 +118,3 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   samp@a <- a
   return(samp)
 })
-
-#' Creates a dataframe of hexagon indices for use in `subsample_hex`
-#' 
-#' @param hex_polys A SpatialPolygonsDataFrame of a hexagon grid.
-#' @return A dataframe with two columns, r and c, that correspond to row and column indices
-#' of the hexagon grid.
-index_hex_polys <- function(hex_polys) {
-  top_points <- matrix(0, nrow=length(hex_polys), ncol=2)
-  i <- 1
-  for(polygon in hex_polys) {
-    poly_coords <- polygon@Polygons[[1]]@coords
-    max_y_ix <- which(poly_coords[,2] == max(poly_coords[,2]))
-    
-    if(length(max_y_ix) > 1) {
-      max_y_ix <- max_y_ix[[1]]
-    }
-    
-    top_points[i,] <- poly_coords[max_y_ix,]
-    i <- i + 1
-  }
-  
-  hex_ix <- transform_coords(top_points)
-  return(hex_ix)
-}
