@@ -396,7 +396,7 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 
 setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, order=1, diagnostic=FALSE) {
-    att_df <- sys_frame@data[,sys_frame@attributes]
+    att_df <- sys_frame@data[,sys_frame@attributes,drop=FALSE]
     v_srs <- var_srs(sys_frame, fpc=fpc)
     C <- gearys_c(sys_frame, order=order)
     var_c <- v_srs * C
@@ -423,6 +423,7 @@ setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'),
   function(sys_frame, fpc=FALSE, order=1, diagnostic=FALSE) {
     v_srs <- var_srs(sys_frame, fpc=fpc)
     morans_I <- morans_i(sys_frame, order=order)
+    browser()
     n <- nrow(sys_frame@data)
     p <- length(sys_frame@attributes)
     att_df <- sys_frame@data[,sys_frame@attributes, drop=FALSE]
