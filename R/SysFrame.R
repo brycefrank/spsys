@@ -1,7 +1,8 @@
 library(sp)
 
 setClass('SysFrame', contains='SpatialPointsDataFrame',
-         slots=list(attributes="character"))
+         slots=list(attributes='character',
+                    pi = 'numeric'))
 
 #' Base class for systematic sampling frames
 #' 
@@ -10,6 +11,7 @@ setClass('SysFrame', contains='SpatialPointsDataFrame',
 #' 
 #' @param attributes A character vector indicating the columns that will be treated as attributes, i.e.
 #' the response variables at each sample position
+#' @param pi A numeric vector defining the first-order inclusion probabilities of each element.
 #' @return An object of class `SysFrame`
 #' @export
 SysFrame <- function(splydf, attributes=character()) {
@@ -19,6 +21,7 @@ SysFrame <- function(splydf, attributes=character()) {
   sys_frame@proj4string <- splydf@proj4string
   sys_frame@coords <- splydf@coords
   sys_frame@attributes <- attributes
+  sys_frame@pi <- pi
   sys_frame
 }
 

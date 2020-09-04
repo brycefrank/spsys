@@ -3,7 +3,8 @@
 setClass('RectFrame', contains='SysFrame',
          slots = list(
            a='numeric',
-           N='numeric'
+           N='numeric',
+           pi='numeric'
          ))
 
 #' Rectangular sampling frame
@@ -24,7 +25,7 @@ setClass('RectFrame', contains='SysFrame',
 #' @example 
 #' hex_frame <- RectFrame(rect_pts, attributes=c('z_1'))
 #' @export
-RectFrame <- function(splydf, attributes=character(), index=NA, N=Inf, a=1, d_x=NA, d_y=NA) {
+RectFrame <- function(splydf, attributes=character(), pi=numeric(), index=NA, N=Inf, a=1, d_x=NA, d_y=NA) {
   sys_frame <- SysFrame(splydf, attributes)
   
   rect_frame <- new('RectFrame')
@@ -33,6 +34,7 @@ RectFrame <- function(splydf, attributes=character(), index=NA, N=Inf, a=1, d_x=
   rect_frame@proj4string <- sys_frame@proj4string
   rect_frame@coords <- sys_frame@coords
   rect_frame@attributes <- sys_frame@attributes
+  rect_frame@pi <- sys_frame@pi
   
   if(length(index) > 1) {
     rect_frame@data[,c('r', 'c')] <- index

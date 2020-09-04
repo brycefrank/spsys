@@ -4,7 +4,8 @@
 setClass('HexFrame', contains='SysFrame',
          slots = list(
            a='numeric',
-           N='numeric'
+           N='numeric',
+           pi='numeric'
          ))
 
 
