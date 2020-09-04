@@ -17,8 +17,7 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
     if(fpc == TRUE & N==Inf) {
       stop('If fpc is set to true you must provide a finite population size N.')
     }
-    
-    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    att_df <- sys_frame@resids[, sys_frame@attributes, drop=FALSE]
     
     
     n <- length(sys_frame)
@@ -51,7 +50,7 @@ setMethod('var_sys', signature(sys_frame='SysFrame'),
   function(sys_frame, a) {
     starts <- subsample_starts(sys_frame, a)
     K <- nrow(starts)
-    mu <- colMeans(sys_frame@data[,sys_frame@attributes])
+    mu <- colMeans(sys_frame@resids[,sys_frame@attributes])
     sse <- 0
     
     # TODO diagnostic should be a dataframe with the sample indices and the
@@ -60,7 +59,7 @@ setMethod('var_sys', signature(sys_frame='SysFrame'),
     
     for(k in 1:K) {
       sub <- subsample(sys_frame, starts[k,], a)
-      mu_hat <- colMeans(sub@data[,sys_frame@attributes])
+      mu_hat <- colMeans(sub@resids[,sys_frame@attributes])
       sq_err <- (mu - mu_hat)^2
       sse <- sse + sq_err
     }
@@ -89,12 +88,8 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
     
     n <- nrow(sys_frame)
     
-    if(!'pi_i' %in% colnames(sys_frame@data)) {
-      warning('Inclusion probability column - "pi_i" not found in @data, assuming
-               inclusion probabilities are n/N.')
-      pi_i <- rep(n/N, n)
-    } else {
-      pi_i <- sys_frame@data$pi_i
+    if(is.na(sys_frame@pi)) {
+      stop('Inclusion probabilities are not found in the @pi slot.')
     }
     
     if(!is.na(coord_cols)) {
@@ -103,8 +98,8 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
       coords <- sys_frame@coords
     }
     
-    wt <- localmean.weight(coords[,1], coords[,2], pi_i, nbh=nbh)
-    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    wt <- localmean.weight(coords[,1], coords[,2], sys_frame@pi, nbh=nbh)
+    att_df <- sys_frame@resids[, sys_frame@attributes, drop=FALSE]
     var_total <- sapply(colnames(att_df), so_att, att_df, pi_i, wt)
     mu <- colMeans(att_df)
     
@@ -155,9 +150,10 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     N <- sys_frame@N
     
     # Mean-center the attributes
-    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    # TODO is this still needed with the residuals??
+    att_df <- sys_frame@resids[, sys_frame@attributes, drop=FALSE]
     att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
-    d_ct <- cbind(sys_frame@data[,c('r', 'c')], att_ct)
+    d_ct <- cbind(sys_frame@resids[,c('r', 'c')], att_ct)
     neighborhoods <- merge(neighborhoods, d_ct, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     atts <- colnames(att_df)
     
@@ -172,7 +168,7 @@ setMethod('var_mat', signature(sys_frame='HexFrame'),
     in_Q <- neighborhoods %>%
       replace_na(zero_list)
     
-    n <- nrow(sys_frame@data)
+    n <- nrow(sys_frame@resids)
     
     # A function that generates the T value for each neighborhood
     get_Ti <- function(x, contr) {return(sum(x * contr)^2  / h)}
@@ -207,9 +203,9 @@ setMethod('var_mat', signature(sys_frame='RectFrame'),
     N <- sys_frame@N
     
     # Mean-center the attributes
-    att_df <- sys_frame@data[, sys_frame@attributes, drop=FALSE]
+    att_df <- sys_frame@resids[, sys_frame@attributes, drop=FALSE]
     att_ct <- att_df  - rep(colMeans(att_df), rep.int(nrow(att_df), ncol(att_df)))
-    d_ct <- cbind(sys_frame@data[,c('r', 'c')], att_ct)
+    d_ct <- cbind(sys_frame@resids[,c('r', 'c')], att_ct)
     neighborhoods <- merge(neighborhoods, d_ct, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     atts <- colnames(att_df)
     
@@ -224,7 +220,7 @@ setMethod('var_mat', signature(sys_frame='RectFrame'),
     in_Q <- neighborhoods %>%
       replace_na(zero_list)
     
-    n <- nrow(sys_frame@data)
+    n <- nrow(sys_frame@resids)
     
     # A function that generates the T value for each neighborhood
     get_Ti <- function(x, contr) {return(sum(x * contr)^2  / h)}
@@ -276,13 +272,12 @@ setMethod('var_non_overlap', signature(sys_frame = 'RectFrame'),
     if(nbh!='par') {
       stop('Only the "par" neigbhorhood structure is defined for RectFrame')
     }
-    
     nbh <- neighborhoods_non(sys_frame)
-    nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    nbh <- merge(nbh, sys_frame@resids, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     
     atts <- sys_frame@attributes
-    att_df <- sys_frame@data[, atts, drop=FALSE]
-    n <- nrow(sys_frame@data)
+    att_df <- sys_frame@resids[, atts, drop=FALSE]
+    n <- nrow(sys_frame@resids)
     N <- sys_frame@N
     
     neighbor_groups <- nbh %>%
@@ -340,10 +335,10 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
     }
     
     N <- sys_frame@N
-    nbh <- merge(nbh, sys_frame@data, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
+    nbh <- merge(nbh, sys_frame@resids, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     atts <- sys_frame@attributes
-    att_df <- sys_frame@data[, atts, drop=FALSE]
-    n <- nrow(sys_frame@data)
+    att_df <- sys_frame@resids[, atts, drop=FALSE]
+    n <- nrow(sys_frame@resids)
     
     neighbor_groups <- nbh %>%
       drop_na(c('r', 'c', atts)) %>%
@@ -396,11 +391,11 @@ setGeneric('var_dorazio_c', function(sys_frame, ...) {
 
 setMethod('var_dorazio_c', signature(sys_frame = 'SysFrame'), 
   function(sys_frame, fpc=FALSE, order=1, diagnostic=FALSE) {
-    att_df <- sys_frame@data[,sys_frame@attributes]
+    att_df <- sys_frame@resids[,sys_frame@attributes]
     v_srs <- var_srs(sys_frame, fpc=fpc)
     C <- gearys_c(sys_frame, order=order)
     var_c <- v_srs * C
-    n <- nrow(sys_frame@data)
+    n <- nrow(sys_frame@resids)
     mu <- colMeans(att_df)
     
     var_c <- AdjOut(var_c, n, sys_frame@N, mu, C, diagnostic)
@@ -425,7 +420,7 @@ setMethod('var_dorazio_i', signature(sys_frame = 'SysFrame'),
     morans_I <- morans_i(sys_frame, order=order)
     n <- nrow(sys_frame@data)
     p <- length(sys_frame@attributes)
-    att_df <- sys_frame@data[,sys_frame@attributes, drop=FALSE]
+    att_df <- sys_frame@resids[,sys_frame@attributes, drop=FALSE]
     mu <- colMeans(att_df)
     
     w <- rep(1, p)

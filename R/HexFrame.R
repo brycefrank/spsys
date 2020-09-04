@@ -1,5 +1,6 @@
 #' @include SysFrame.R
 #' @include subsample.R
+#' @include greg.R
 
 setClass('HexFrame', contains='SysFrame',
          slots = list(
@@ -17,6 +18,8 @@ setClass('HexFrame', contains='SysFrame',
 #' 
 #' @param attributes A character vector indicating the columns that will be treated as attributes, i.e.
 #' the response variables at each sample position
+#' @param point_est A function that produces point estimates, usually defined using the `greg` function. The 
+#' default value is `'ht'` which specifies the Horvitz-Thompson estimator.
 #' @param index An optional dataframe that manually specifies the row and column indices
 #' @param a The sampling interval at which the systematic sample was collected originally. Typically set
 #' internally by `subsample`
@@ -25,7 +28,7 @@ setClass('HexFrame', contains='SysFrame',
 #' @example 
 #' hex_frame <- HexFrame(hex_pts, attributes=c('z_1'))
 #' @export
-HexFrame <- function(splydf, attributes=character(), index=NA, a=1, N=Inf) {
+HexFrame <- function(splydf, attributes=character(), index=NA, a=1, N=Inf, pi=NA_real_) {
   sys_frame <- SysFrame(splydf, attributes)
   
   hex_frame <- new('HexFrame')
@@ -35,6 +38,7 @@ HexFrame <- function(splydf, attributes=character(), index=NA, a=1, N=Inf) {
   hex_frame@coords <- sys_frame@coords
   hex_frame@attributes <- sys_frame@attributes
   hex_frame@N <- N
+  hex_frame@pi <- pi
   
   if(length(index) > 1) {
     hex_frame@data[,c('r', 'c')] <- index
@@ -114,7 +118,7 @@ setMethod('subsample', 'HexFrame', function(object, start_pos, a) {
   new_spdf <- SpatialPointsDataFrame(coords = object@coords[keep_ix$TEMP,], data=object@data[keep_ix$TEMP,])
   crs(new_spdf) <- crs(object)
   
-  samp <- HexFrame(new_spdf, attributes=object@attributes, index=keep_ix[,c('r', 'c')])
+  samp <- HexFrame(new_spdf, attributes=object@attributes, index=keep_ix[,c('r', 'c')], pi=rep(1/a^2, nrow(new_spdf@data)))
   samp@data$TEMP <- NA
   samp@a <- a
   return(samp)

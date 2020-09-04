@@ -15,6 +15,7 @@ RdMacros: Rdpack
 Collate: 
     'VarOut.R'
     'AdjOut.R'
+    'greg.R'
     'subsample.R'
     'SysFrame.R'
     'HexFrame.R'

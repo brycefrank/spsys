@@ -2,7 +2,10 @@ library(sp)
 
 setClass('SysFrame', contains='SpatialPointsDataFrame',
          slots=list(attributes='character',
-                    pi = 'numeric'))
+                    pi = 'numeric',
+                    mods = 'list',
+                    point_est = 'list', # TODO make this a dataframe
+                    resids='data.frame'))
 
 #' Base class for systematic sampling frames
 #' 
@@ -14,7 +17,7 @@ setClass('SysFrame', contains='SpatialPointsDataFrame',
 #' @param pi A numeric vector defining the first-order inclusion probabilities of each element.
 #' @return An object of class `SysFrame`
 #' @export
-SysFrame <- function(splydf, attributes=character()) {
+SysFrame <- function(splydf, attributes=character(), pi=NA_real_) {
   sys_frame <- new('SysFrame')
   sys_frame@data <- splydf@data
   sys_frame@bbox <- splydf@bbox
@@ -22,6 +25,23 @@ SysFrame <- function(splydf, attributes=character()) {
   sys_frame@coords <- splydf@coords
   sys_frame@attributes <- attributes
   sys_frame@pi <- pi
+  
+  # Construct the point estimation function and assign the residuals slot
+  #if(!is.na(point_est)) {
+  #  if(point_est == 'ht') {
+  #    # Construct a mapping for intercept only gregs
+  #    mapping <- list()
+  #    for(att in sys_frame@attributes) {
+  #      form <- paste(att, '~', 1)
+  #      mapping[att] <- form
+  #    }
+  #    sys_frame@resids <- greg(mapping)(sys_frame)
+  #  } else if(is.function(point_est)) {
+  #    sys_frame@resids <- point_est(sys_frame)
+  #  }
+  #}
+  
+  
   sys_frame
 }
 

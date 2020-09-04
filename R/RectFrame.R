@@ -69,7 +69,7 @@ setMethod('subsample', 'RectFrame', function(object, start_pos, a) {
   new_spdf <- SpatialPointsDataFrame(coords = object@coords[keep_ix$TEMP,], data=object@data[keep_ix$TEMP,])
   crs(new_spdf) <- crs(object)
   
-  samp <- RectFrame(new_spdf, attributes=object@attributes, index=keep_ix[,c('r', 'c')])
+  samp <- RectFrame(new_spdf, attributes=object@attributes, index=keep_ix[,c('r', 'c')], pi=rep(1/a^2, nrow(new_spdf@data)))
   samp@data$TEMP <- NA
   samp@a <- a
   return(samp)
