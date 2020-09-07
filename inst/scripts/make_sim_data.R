@@ -7,7 +7,7 @@ library(ggplot2)
 library(tidyr)
 library(colorspace)
 library(latex2exp)
-set.seed(12)
+set.seed(1)
 
 make_hex_pops <- function() {
   min_x <- 0
@@ -22,19 +22,25 @@ make_hex_pops <- function() {
   
   # Now we want to simulate spatially correlated data
   coords <- HexPts@coords
-  colnames(coords) <- c('x', 'y')
+  colnames(coords) <- c('s_1', 's_2')
   coords <- data.frame(coords)
   
-  slm1 <-  gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=1, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
-  slm50 <-  gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=50, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
-  slm100 <- gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=100, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
+  x1_mod <-  gstat(formula=x1~1, locations=~s_1+s_2, model=vgm(psill=2, range=100, model='Exp', nugget = 0), dummy=T, beta=0, nmax=1)
+  x1 <-  data.frame(predict(x1_mod, newdata=coords, nsim=1))
+  colnames(x1) <- c('s_1', 's_2', 'x1')
+
+  covariates <- x1[,c('s_1', 's_2', 'x1')]
+  beta <- 2
+  slm1 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=1, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm50 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=50, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm100 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=100, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
   
-  pop1 <-  data.frame(predict(slm1, newdata=coords, nsim=1))
-  pop50 <-  data.frame(predict(slm50, newdata=coords, nsim=1))
-  pop100 <- data.frame(predict(slm100, newdata=coords, nsim=1))
+  pop1   <-  data.frame(predict(slm1, newdata=covariates, nsim=1))
+  pop50  <-  data.frame(predict(slm50, newdata=covariates, nsim=1))
+  pop100 <-  data.frame(predict(slm100, newdata=covariates, nsim=1))
   
-  pop_df <- cbind(pop1, pop50[,c('sim1')], pop100[,c('sim1')])
-  colnames(pop_df) <- c('s_1', 's_2', 'z_1', 'z_50', 'z_100')
+  pop_df <- cbind(pop1, covariates$x1, pop50[,c('sim1')], pop100[,c('sim1')])
+  colnames(pop_df) <- c('s_1', 's_2', 'x_1', 'z_1', 'z_50', 'z_100')
   
   pop_df
 }
@@ -64,19 +70,25 @@ make_rect_pops <- function() {
   
   # Now we want to simulate spatially correlated data
   coords <- RectPts@coords
-  colnames(coords) <- c('x', 'y')
+  colnames(coords) <- c('s_1', 's_2')
   coords <- data.frame(coords)
   
-  slm1   <- gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=1, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
-  slm50  <- gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=50, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
-  slm100 <- gstat(formula=z~1, locations=~x+y, model=vgm(psill=2, range=100, model='Exp', nugget = 0.5), dummy=T, beta=1, nmax=1)
+  x1_mod <-  gstat(formula=x1~1, locations=~s_1+s_2, model=vgm(psill=2, range=100, model='Exp', nugget = 0), dummy=T, beta=0, nmax=1)
+  x1 <-  data.frame(predict(x1_mod, newdata=coords, nsim=1))
+  colnames(x1) <- c('s_1', 's_2', 'x1')
   
-  pop1   <- data.frame(predict(slm1, newdata=coords, nsim=1))
-  pop50  <- data.frame(predict(slm50, newdata=coords, nsim=1))
-  pop100 <- data.frame(predict(slm100, newdata=coords, nsim=1))
+  covariates <- x1[,c('s_1', 's_2', 'x1')]
+  beta <- 2
+  slm1 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=1, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm50 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=50, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm100 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=100, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
   
-  pop_df <- cbind(pop1, pop50[,c('sim1')], pop100[,c('sim1')])
-  colnames(pop_df) <- c('s_1', 's_2', 'z_1', 'z_50', 'z_100')
+  pop1   <-  data.frame(predict(slm1, newdata=covariates, nsim=1))
+  pop50  <-  data.frame(predict(slm50, newdata=covariates, nsim=1))
+  pop100 <-  data.frame(predict(slm100, newdata=covariates, nsim=1))
+  
+  pop_df <- cbind(pop1, covariates$x1, pop50[,c('sim1')], pop100[,c('sim1')])
+  colnames(pop_df) <- c('s_1', 's_2', 'x_1', 'z_1', 'z_50', 'z_100')
   
   pop_df
 }

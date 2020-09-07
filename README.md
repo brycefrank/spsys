@@ -2,7 +2,7 @@
 
 This readme provides a cursory overview of the functionality of `spsys`. Refer to the [manual](http://brycefrank.com/spsys/reference/index.html) for deeper descriptions of package functionality and use.
 
-Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of estimates from systematic sampling designs has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `spsys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. More specifically, `spsys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson estimator in two-dimensional settings.
+Many environmental surveys use systematic sampling to produce estimates of population parameters. Estimating the precision of estimates from systematic sampling designs has proven a difficult task, with several systematic variance estimators proposed over the past several decades. While not exhaustive, `spsys` implements several different variance estimators and provides diagnostic and simulation tools to allow analysts to select an appropriate variance estimator for their population. `spsys` provides variance estimation for surveys that rely on point estimates of attributes of interest that use the Horvitz-Thompson and generalized regression (GREG) estimators in two-dimensional settings.
 
 `spsys` derives its classes from the popular `sp` package, thus all `sp`-related functions such as `sp::plot`, `rgdal::writeOGR`, etc. work with no further modifications.
 
@@ -28,9 +28,12 @@ hex_frame <- HexFrame(hex_points, c('vol', 'ba'), N=10000)
 
 `HexFrame` takes two arguments: a `SpatialPointsDataFrame` and a vector of column names that indicate attributes we are interested in conducting the analyses on. Here we indicate volume (vol) and basal area (ba) as our attributes of interest, and we indicate that the population size is `N=10000`. `HexFrame`, and its sister class `RectFrame` (for rectangular systematic samples), implement a standard interface upon which variance estimators can be constructed.
 
-### Estimating Variances
+### Estimating the Variance of Point Estimators
 
-Once we have wrapped our sample information within a `HexFrame` or `RectFrame`, the next step is to construct a variance estimator. For example, we can construct a variance estimator that assumes simple random sampling was conducted, as is common practice for many environmental sample surveys.
+The task of variance estimation in survey sampling is to estimate the variance of a point estimate. `spsys` offers two commonly used point estimators including the Horvitz-Thompson (HT) and generalized regression (GREG) estimators.
+
+[expand this section to accommodate the point estimators]
+Once we have wrapped our sample information within a `HexFrame` or `RectFrame`, the next step is to construct a point estimator. For example, we can construct a variance estimator that assumes simple random sampling was conducted, as is common practice for many environmental sample surveys.
 
 ```
 my_srs_estimator <- VarSRS(fpc=TRUE)

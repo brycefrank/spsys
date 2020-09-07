@@ -4,7 +4,7 @@ setClass('SysFrame', contains='SpatialPointsDataFrame',
          slots=list(attributes='character',
                     pi = 'numeric',
                     mods = 'list',
-                    point_est = 'list', # TODO make this a dataframe
+                    mu_hat = 'list', # TODO make this a dataframe
                     resids='data.frame'))
 
 #' Base class for systematic sampling frames
