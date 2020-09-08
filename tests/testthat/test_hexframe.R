@@ -7,7 +7,6 @@ hf <- HexFrame(hex_pts_small, attributes = c('z_1', 'z_50', 'z_100'))
 hf@a <- 3
 hf@N <- 1000
 
-
 # Make the population and sample for the variance estimators
 hf_pop <- SpatialPointsDataFrame(hex_pts[,c('s_1', 's_2')], hex_pts)
 hf_pop <- HexFrame(hf_pop, attributes = c('z_1', 'z_50', 'z_100'))
@@ -138,6 +137,28 @@ test_that('HexFrame is properly indexed with "beta" input index', {
   
   expect_equal(first_row, 1)
   expect_equal(first_col_of_first_row, 3)
+})
+
+test_that('subsample visits all possible elements precisely once', {
+  a <- 3
+  starts <- subsample_starts(hf_pop, a)
+  hf_pop@data$ix <- seq(1, nrow(hf_pop@data))
+  
+  samp_ixs <- list()
+  for(i in 1:nrow(starts)) {
+    hf_subsamp <- subsample(hf_pop, starts[i,],a)
+    samp_ixs[[i]] <- hf_subsamp@data[,'ix',drop=FALSE]
+    samp_ixs[[i]]$i <- i
+  }
+  
+  samp_ixs <- bind_rows(samp_ixs)
+  samp_ixs$samp <- TRUE
+  samp_check <- merge(hf_pop@data, samp_ixs, by='ix', all.x=TRUE, all.y=TRUE)
+  # Check for elements missing over all subsamples
+  expect_equal(sum(is.na(samp_check$samp)), 0)
+  
+  # Check for samples that were visited more than once
+  expect_equal(nrow(samp_check), nrow(hf_pop@data))
 })
 
 test_that('HT and GREG point estimators return the correct estimates', {

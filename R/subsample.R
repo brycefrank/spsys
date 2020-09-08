@@ -101,15 +101,13 @@ subsample_hex_ix <- function(hex_ix, start_pos, a) {
   j <- 0
   for(r in r_seq) {
     if (j %% 2 == 0) {
-      add <- seq(0, max_c-1, a*2)
+      add <- seq(-a*2, max_c-1, a*2)
     } else {
       add <- seq(-a, max_c-1, a*2)
-      add <- add[add>0]
     }
     
     c_samp <- c(c_samp, add)
     r_samp <- c(r_samp, rep(r, length(add)))
-    
     
     j <- j + 1
   }
