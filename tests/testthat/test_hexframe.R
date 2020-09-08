@@ -7,6 +7,7 @@ hf <- HexFrame(hex_pts_small, attributes = c('z_1', 'z_50', 'z_100'))
 hf@a <- 3
 hf@N <- 1000
 
+
 # Make the population and sample for the variance estimators
 hf_pop <- SpatialPointsDataFrame(hex_pts[,c('s_1', 's_2')], hex_pts)
 hf_pop <- HexFrame(hf_pop, attributes = c('z_1', 'z_50', 'z_100'))
@@ -211,16 +212,15 @@ test_that('VarMAT works on HexFrame for paralellogram structure', {
   v_fpc <- VarMAT(fpc=TRUE, diagnostic=FALSE, nbh='par')
   v_diag <- VarMAT(diagnostic=TRUE, nbh='par')
   
-  est_no_fpc <- v_no_fpc(hf)[[1]]
-  expect_equal(0.053, round(est_no_fpc, 3))
+  est_no_fpc <- v_no_fpc(greg_hf)[[1]]
+  expect_equal(0.217, round(est_no_fpc, 3))
   
-  est_fpc <- v_fpc(hf)[[1]]
-  expect_equal(0.052, round(est_fpc, 3))
+  est_fpc <- v_fpc(greg_hf)[[1]]
+  expect_equal(0.193, round(est_fpc, 3))
   
-  diagn <- v_diag(hf)
-  expect_equal(diagn@n, 20)
-  expect_equal(diagn@N, hf@N)
-  expect_equal(round(diagn@mu[[1]], 2), 0.77)
+  diagn <- v_diag(greg_hf)
+  expect_equal(diagn@n, 114)
+  expect_equal(diagn@N, hf_pop@N)
 })
 
 test_that('VarMAT works on HexFrame for hexagonal structure', {
