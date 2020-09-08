@@ -163,14 +163,14 @@ test_that('subsample visits all possible elements precisely once', {
 
 test_that('HT and GREG point estimators return the correct estimates', {
   # Check greg point estimates
-  expect_equal(0.052, round(greg_hf@mu_hat$z_1, 3))
-  expect_equal(0.111, round(greg_hf@mu_hat$z_50, 3))
-  expect_equal(0.109, round(greg_hf@mu_hat$z_100, 3))
+  expect_equal(-0.042, round(greg_hf@mu_hat$z_1, 3))
+  expect_equal(-0.090, round(greg_hf@mu_hat$z_50, 3))
+  expect_equal(-0.089, round(greg_hf@mu_hat$z_100, 3))
   
   # Check horvitz-thompson point estimates
-  expect_equal(-1.467, round(ht_hf@mu_hat$z_1, 3))
-  expect_equal(-1.475, round(ht_hf@mu_hat$z_50, 3))
-  expect_equal(-5.919, round(ht_hf@mu_hat$z_100, 3))
+  expect_equal(-0.163, round(ht_hf@mu_hat$z_1, 3))
+  expect_equal(-0.164, round(ht_hf@mu_hat$z_50, 3))
+  expect_equal(-0.658, round(ht_hf@mu_hat$z_100, 3))
 })
 
 
@@ -185,8 +185,6 @@ test_that('VarNON works on HexFrame for triangular structure', {
   
   est_fpc <- v_fpc(greg_hf)[[1]]
   expect_equal(0.145, round(est_fpc, 3))
-  
-  # Check horvitz
   
   diagn <- v_diag(greg_hf)
   expect_equal(diagn@n, 114)
@@ -249,16 +247,15 @@ test_that('VarMAT works on HexFrame for hexagonal structure', {
   v_fpc <- VarMAT(fpc=TRUE, diagnostic=FALSE, nbh='hex')
   v_diag <- VarMAT(diagnostic=TRUE, nbh='hex')
   
-  est_no_fpc <- v_no_fpc(hf)[[1]]
-  expect_equal(0.067, round(est_no_fpc, 3))
+  est_no_fpc <- v_no_fpc(greg_hf)[[1]]
+  expect_equal(0.264, round(est_no_fpc, 3))
   
-  est_fpc <- v_fpc(hf)[[1]]
-  expect_equal(0.066, round(est_fpc, 3))
+  est_fpc <- v_fpc(greg_hf)[[1]]
+  expect_equal(0.234, round(est_fpc, 3))
   
-  diagn <- v_diag(hf)
-  expect_equal(diagn@n, 20)
-  expect_equal(diagn@N, hf@N)
-  expect_equal(round(diagn@mu[[1]], 2), 0.77)
+  diagn <- v_diag(greg_hf)
+  expect_equal(diagn@n, 114)
+  expect_equal(diagn@N, hf_pop@N)
 })
 
 test_that('VarDI works on HexFrame', {
@@ -266,16 +263,15 @@ test_that('VarDI works on HexFrame', {
   v_fpc <- VarDI(fpc=TRUE, diagnostic=FALSE)
   v_diag <- VarDI(diagnostic=TRUE)
   
-  est_no_fpc <- v_no_fpc(hf)[[1]]
-  expect_equal(0.089, round(est_no_fpc, 3))
+  est_no_fpc <- v_no_fpc(greg_hf)[[1]]
+  expect_equal(0.070, round(est_no_fpc, 3))
   
-  est_fpc <- v_fpc(hf)[[1]]
-  expect_equal(0.087, round(est_fpc, 3))
+  est_fpc <- v_fpc(greg_hf)[[1]]
+  expect_equal(0.062, round(est_fpc, 3))
   
-  diagn <- v_diag(hf)
-  expect_equal(diagn@n, 20)
-  expect_equal(diagn@N, hf@N)
-  expect_equal(round(diagn@mu[[1]], 2), 0.77)
+  diagn <- v_diag(greg_hf)
+  expect_equal(diagn@n, 114)
+  expect_equal(diagn@N, hf_pop@N)
 })
 
 test_that('VarDC works on HexFrame', {
@@ -283,14 +279,13 @@ test_that('VarDC works on HexFrame', {
   v_fpc <- VarDC(fpc=TRUE, diagnostic=FALSE)
   v_diag <- VarDC(diagnostic=TRUE)
   
-  est_no_fpc <- v_no_fpc(hf)[[1]]
-  expect_equal(0.1, round(est_no_fpc, 3))
+  est_no_fpc <- v_no_fpc(greg_hf)[[1]]
+  expect_equal(0.212, round(est_no_fpc, 3))
   
-  est_fpc <- v_fpc(hf)[[1]]
-  expect_equal(0.098, round(est_fpc, 3))
+  est_fpc <- v_fpc(greg_hf)[[1]]
+  expect_equal(0.118, round(est_fpc, 3))
   
-  diagn <- v_diag(hf)
-  expect_equal(diagn@n, 20)
-  expect_equal(diagn@N, hf@N)
-  expect_equal(round(diagn@mu[[1]], 2), 0.77)
+  diagn <- v_diag(greg_hf)
+  expect_equal(diagn@n, 114)
+  expect_equal(diagn@N, hf_pop@N)
 })
