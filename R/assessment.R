@@ -25,8 +25,9 @@
 #' )
 #' compare_estimators(hex_frame, c(4), estimators)
 #' @export
-compare_estimators <- function(sys_frame, a_vec, estimators) {
+compare_estimators <- function(sys_frame, a_vec, estimators, mapping) {
   N <- nrow(sys_frame)
+  
   mu <- colMeans(sys_frame@data[,sys_frame@attributes, drop=FALSE])
   sigma2 <- (1/N) * colSums(sweep(sys_frame@data[,sys_frame@attributes], 2, mu)^2)
   gearys_C <- gearys_c(sys_frame)
@@ -54,7 +55,9 @@ compare_estimators <- function(sys_frame, a_vec, estimators) {
       subsamp@data$pi_i <- 1/a^2
       subsamp@N <- N
       n <- nrow(subsamp)
-      means[j,] <- colMeans(subsamp@data[,subsamp@attributes, drop=FALSE])
+      
+      subsamp_greg <- greg(subsamp, mapping, sys_frame@data)
+      means[j,] <- subsamp_greg@mu_hat
       
       for(k in 1:length(estimators)) {
         est_vars_k <- data.frame(matrix(0, nrow=p, ncol=7))
@@ -67,20 +70,22 @@ compare_estimators <- function(sys_frame, a_vec, estimators) {
         
         v <- estimators[[k]]
         v_name <- names(estimators)[[k]]
-        var_est <- v(subsamp)
+        var_est <- v(subsamp_greg)
         
         est_vars_k[,5] <- unlist(var_est)
         est_vars[[h]] <- data.frame(est_vars_k)
         h <- h + 1
       }
     }
+    
     # Compute and store the systematic variance
-    var_sys <- colMeans(sweep(means, 2, mu)^2)
-    var_sys_i <- data.frame(matrix(0, nrow=p, ncol=4))
-    var_sys_i[,1] <- 'var_sys'
-    var_sys_i[,2] <- a
-    var_sys_i[,3] <- sys_frame@attributes
-    var_sys_i[,4] <- var_sys
+    v_sys <- var_sys(sys_frame, a, mapping)
+    
+    var_sys_i       <- data.frame(matrix(0, nrow=p, ncol=4))
+    var_sys_i[,1]   <- 'var_sys'
+    var_sys_i[,2]   <- a
+    var_sys_i[,3]   <- sys_frame@attributes
+    var_sys_i[,4]   <- v_sys
     var_sys_df[[i]] <- var_sys_i
   }
   

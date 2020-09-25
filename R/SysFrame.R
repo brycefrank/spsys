@@ -1,4 +1,5 @@
 library(sp)
+library(raster)
 
 setClass('SysFrame', contains='SpatialPointsDataFrame',
          slots=list(attributes='character',

@@ -17,9 +17,8 @@ setMethod('var_srs', signature(sys_frame='SysFrame'),
     if(fpc == TRUE & N==Inf) {
       stop('If fpc is set to true you must provide a finite population size N.')
     }
+    
     att_df <- sys_frame@resids[, sys_frame@attributes, drop=FALSE]
-    
-    
     n <- length(sys_frame)
     
     att_means <- colMeans(att_df)
@@ -47,22 +46,21 @@ setGeneric('var_sys', function(sys_frame, ...){
 })
 
 setMethod('var_sys', signature(sys_frame='SysFrame'),
-  function(sys_frame, a) {
+  function(sys_frame, a, mapping) {
     starts <- subsample_starts(sys_frame, a)
     K <- nrow(starts)
-    mu <- colMeans(sys_frame@resids[,sys_frame@attributes])
+    mu <- colMeans(sys_frame@data[,sys_frame@attributes])
     sse <- 0
-    
-    # TODO diagnostic should be a dataframe with the sample indices and the
-    # means of each sample
-    # can't think of anything else to add?
     
     for(k in 1:K) {
       sub <- subsample(sys_frame, starts[k,], a)
-      mu_hat <- colMeans(sub@resids[,sys_frame@attributes])
+      sub_greg <- greg(sub, mapping, sys_frame@data)
+      mu_hat <- unlist(sub_greg@mu_hat)
+      
       sq_err <- (mu - mu_hat)^2
       sse <- sse + sq_err
     }
+    
     return(1/K * sse)
   }
 )
@@ -333,7 +331,6 @@ setMethod('var_non_overlap', signature(sys_frame = 'HexFrame'),
       stop('This estimator requires specification of the sampling interval. Please set one using the
            @a slot.')
     }
-    
     N <- sys_frame@N
     nbh <- merge(nbh, sys_frame@resids, by.x=c('r_n', 'c_n'), by.y=c('r', 'c'), all.x=TRUE)
     atts <- sys_frame@attributes

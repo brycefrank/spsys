@@ -31,21 +31,21 @@ make_hex_pops <- function() {
 
   covariates <- x1[,c('s_1', 's_2', 'x1')]
   beta <- 2
-  slm1 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=1, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
-  slm50 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=50, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
-  slm100 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=100, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm1 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=5, range=1, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm50 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=5, range=50, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm100 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=5, range=100, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
   
   pop1   <-  data.frame(predict(slm1, newdata=covariates, nsim=1))
   pop50  <-  data.frame(predict(slm50, newdata=covariates, nsim=1))
   pop100 <-  data.frame(predict(slm100, newdata=covariates, nsim=1))
-  
   pop_df <- cbind(pop1, covariates$x1, pop50[,c('sim1')], pop100[,c('sim1')])
-  colnames(pop_df) <- c('s_1', 's_2', 'x_1', 'z_1', 'z_50', 'z_100')
+  colnames(pop_df) <- c('s_1', 's_2', 'z_1', 'x_1', 'z_50', 'z_100')
   
   pop_df
 }
 
 hex_pts <- make_hex_pops()
+
 usethis::use_data(hex_pts, overwrite = TRUE)
 
 #' Makes a small dataset for testing the HexFrame functionality
@@ -79,9 +79,9 @@ make_rect_pops <- function() {
   
   covariates <- x1[,c('s_1', 's_2', 'x1')]
   beta <- 2
-  slm1 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=1, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
-  slm50 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=50, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
-  slm100 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=100, model='Exp', nugget=0.5), nmax=1, dummy=T, beta=c(0, beta))
+  slm1 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=1, model='Exp', nugget=2), nmax=1, dummy=T, beta=c(0, beta))
+  slm50 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=50, model='Exp', nugget=2), nmax=1, dummy=T, beta=c(0, beta))
+  slm100 <- gstat(formula=y~x1, locations=~s_1+s_2, model=vgm(psill=2, range=100, model='Exp', nugget=2), nmax=1, dummy=T, beta=c(0, beta))
   
   pop1   <-  data.frame(predict(slm1, newdata=covariates, nsim=1))
   pop50  <-  data.frame(predict(slm50, newdata=covariates, nsim=1))
@@ -99,7 +99,7 @@ usethis::use_data(rect_pts, overwrite = TRUE)
 make_hex_fig <- function(pops) {
   plot_df <- pivot_longer(pops, c('z_1', 'z_50', 'z_100'))
   plot_df$name <- factor(plot_df$name, levels=c('z_1', 'z_50', 'z_100'))
-  levels(plot_df$name) <- c(TeX('$\\phi = 1$'), TeX('$\\phi = 50$'), TeX('$\\phi = 100$'))
+  levels(plot_df$name) <- c(TeX('$\\phi_z = 1$'), TeX('$\\phi_z = 50$'), TeX('$\\phi_z = 100$'))
   
   ggplot(plot_df) +
     geom_hex(aes(x=s_1, y=s_2, color=value, fill=value), stat='identity') + 

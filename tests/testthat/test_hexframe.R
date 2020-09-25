@@ -15,10 +15,11 @@ hf_pop@N <- nrow(hf_pop@data)
 hf_subsamp <- subsample(hf_pop, c(1,1), 3)
 hf_subsamp@N <- nrow(hf_pop@data)
 
+devtools::load_all()
 greg_mapping <- list(
-  'z_1'   = z_1 ~ x_1 - 1,
-  'z_50'  = z_50 ~ x_1 - 1,
-  'z_100' = z_100 ~ x_1 - 1
+  z_1   ~ x_1 - 1,
+  z_50  ~ x_1 - 1,
+  z_100 ~ x_1 - 1
 )
 
 greg_hf <- greg(hf_subsamp, greg_mapping, hf_pop@data)

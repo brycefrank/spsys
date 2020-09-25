@@ -1,5 +1,4 @@
 # Examples given in the paper
-
 devtools::load_all()
 data("hex_pts")
 
@@ -8,11 +7,18 @@ hex_spdf <- SpatialPointsDataFrame(
   data=hex_pts[,c('z_1', 'z_50', 'z_100')]
 )
 
+# Create a HexFrame
 hf <- HexFrame(hex_spdf, attributes = c('z_1', 'z_50', 'z_100'))
-v_sys <- VarSYS(a=5, diagnostic=TRUE)
 
+# Prepare the HexFrame for estimation
+mapping <- list(
+  z_1   ~ x_1 - 1,
+  z_50  ~ x_1 - 1,
+  z_100 ~ x_1 - 1
+)
 
-estimators <- list(
+hf_greg <- greg(hf, mapping, hf@data)
+var_estimators <- list(
   'var_srs' = VarSRS(fpc=TRUE, diagnostic=FALSE),
   'var_non_hex' = VarNON(fpc=TRUE, diagnostic=FALSE, nbh='hex'),
   'var_non_par' = VarNON(fpc=TRUE, diagnostic=FALSE, nbh='mat'),

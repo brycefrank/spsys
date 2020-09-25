@@ -1,4 +1,5 @@
 # Methods for constructing neighborhoods
+library(dplyr)
 
 #' Retrieves all immediate hexagonal neighbors.
 #' 

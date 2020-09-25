@@ -1,6 +1,7 @@
 #' @include SysFrame.R
 #' @include subsample.R
 #' @include greg.R
+library(raster)
 
 setClass('HexFrame', contains='SysFrame',
          slots = list(
