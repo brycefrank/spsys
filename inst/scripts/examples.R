@@ -4,11 +4,12 @@ data("hex_pts")
 
 hex_spdf <- SpatialPointsDataFrame(
   coords=hex_pts[,c('s_1', 's_2')], 
-  data=hex_pts[,c('z_1', 'z_50', 'z_100')]
+  data=hex_pts[,c('x_1', 'z_1', 'z_50', 'z_100')]
 )
 
 # Create a HexFrame
 hf <- HexFrame(hex_spdf, attributes = c('z_1', 'z_50', 'z_100'))
+hf@N <- nrow(hf@data)
 
 # Prepare the HexFrame for estimation
 mapping <- list(
@@ -17,19 +18,17 @@ mapping <- list(
   z_100 ~ x_1 - 1
 )
 
-hf_greg <- greg(hf, mapping, hf@data)
 var_estimators <- list(
-  'var_srs' = VarSRS(fpc=TRUE, diagnostic=FALSE),
-  'var_non_hex' = VarNON(fpc=TRUE, diagnostic=FALSE, nbh='hex'),
-  'var_non_par' = VarNON(fpc=TRUE, diagnostic=FALSE, nbh='mat'),
-  'var_mat_par' = VarMAT(fpc=TRUE, diagnostic=FALSE, nbh='mat')
+  'var_srs' = VarSRS(fpc=TRUE, diagnostic=FALSE)
 )
 
-assessment <- compare_estimators(hf, 4, estimators)
+assessment <- compare_estimators(hf, 4, var_estimators, mapping)
 var_ratios <- merge(assessment$est_frame, assessment$sys_frame, 
                     by=c('attribute', 'a'), suffix=c('_est', '_sys'))
 var_ratios$ratio <- var_ratios$variance_est / var_ratios$variance_sys
 
+library(ggplot2)
+library(latex2exp)
 boxplot_fig <- function(var_ratios) {
   var_ratios$attribute <- factor(var_ratios$attribute, levels=c('z_1', 'z_50', 'z_100'))
   levels(var_ratios$attribute) <- c(TeX('$\\phi = 1$'), TeX('$\\phi = 50$'), TeX('$\\phi = 100$'))

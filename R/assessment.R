@@ -52,7 +52,7 @@ compare_estimators <- function(sys_frame, a_vec, estimators, mapping) {
       print(paste('---- Processing sampling position =', j))
       start <- starts[j,]
       subsamp <- subsample(sys_frame, start, a)
-      subsamp@data$pi_i <- 1/a^2
+      subsamp@pi <- rep(1/a^2, nrow(subsamp@data))
       subsamp@N <- N
       n <- nrow(subsamp)
       
@@ -88,7 +88,6 @@ compare_estimators <- function(sys_frame, a_vec, estimators, mapping) {
     var_sys_i[,4]   <- v_sys
     var_sys_df[[i]] <- var_sys_i
   }
-  
   est_vars <- bind_rows(est_vars)
   sys_vars <- bind_rows(var_sys_df)
   colnames(sys_vars) <- c('estimator', 'a', 'attribute', 'variance')
