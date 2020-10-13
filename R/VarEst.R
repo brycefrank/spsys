@@ -41,9 +41,9 @@ VarSRS <- function(fpc=FALSE, diagnostic=FALSE) {
 #'     \insertAllCited{}
 #' }
 #' @export
-VarSO <- function(fpc=FALSE, diagnostic=FALSE, coord_cols=NA, nbh=4) {
+VarSO <- function(fpc=FALSE, diagnostic=FALSE, coord_cols=NA, nbh=4, wt_fun=localmean.weight) {
   function(sys_frame) {
-    return(var_so(sys_frame, fpc=fpc, diagnostic=diagnostic, coord_cols=coord_cols, nbh=nbh))
+    return(var_so(sys_frame, fpc=fpc, diagnostic=diagnostic, coord_cols=coord_cols, nbh=nbh, wt_fun=wt_fun))
   }
 }
 

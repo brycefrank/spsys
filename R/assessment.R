@@ -27,9 +27,8 @@
 #' @export
 compare_estimators <- function(sys_frame, a_vec, estimators, mapping) {
   N <- nrow(sys_frame)
-  
   mu <- colMeans(sys_frame@data[,sys_frame@attributes, drop=FALSE])
-  sigma2 <- (1/N) * colSums(sweep(sys_frame@data[,sys_frame@attributes], 2, mu)^2)
+  sigma2 <- (1/N) * colSums(sweep(sys_frame@data[,sys_frame@attributes, drop=FALSE], 2, mu)^2)
   gearys_C <- gearys_c(sys_frame)
   morans_I <- morans_i(sys_frame)
   
@@ -77,7 +76,6 @@ compare_estimators <- function(sys_frame, a_vec, estimators, mapping) {
         h <- h + 1
       }
     }
-    
     # Compute and store the systematic variance
     v_sys <- var_sys(sys_frame, a, mapping)
     

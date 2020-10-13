@@ -49,7 +49,7 @@ setMethod('var_sys', signature(sys_frame='SysFrame'),
   function(sys_frame, a, mapping) {
     starts <- subsample_starts(sys_frame, a)
     K <- nrow(starts)
-    mu <- colMeans(sys_frame@data[,sys_frame@attributes])
+    mu <- colMeans(sys_frame@data[,sys_frame@attributes,drop=FALSE])
     sse <- 0
     
     for(k in 1:K) {
@@ -78,7 +78,7 @@ setGeneric('var_so', function(sys_frame, ...){
 })
 
 setMethod('var_so', signature(sys_frame='SysFrame'),
-  function(sys_frame, fpc=FALSE, diagnostic=FALSE, coord_cols=NA, nbh=4) {
+  function(sys_frame, fpc=FALSE, diagnostic=FALSE, coord_cols=NA, nbh=4, wt_fun=localmean.weight) {
     N <- sys_frame@N
     if(N==Inf) {
       stop('var_so requires a population size N')
@@ -96,9 +96,9 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
       coords <- sys_frame@coords
     }
     
-    wt <- localmean.weight(coords[,1], coords[,2], sys_frame@pi, nbh=nbh)
+    wt <- wt_fun(coords[,1], coords[,2], sys_frame@pi, nbh=nbh)
     att_df <- sys_frame@resids[, sys_frame@attributes, drop=FALSE]
-    var_total <- sapply(colnames(att_df), so_att, att_df, pi_i, wt)
+    var_total <- sapply(colnames(att_df), so_att, att_df, sys_frame@pi, wt)
     mu <- colMeans(att_df)
     
     if(fpc) {
@@ -115,7 +115,7 @@ setMethod('var_so', signature(sys_frame='SysFrame'),
 #' Computes the Stevens and Olsen estimator for a specific attribute. 
 #' Used internally with var_so function.
 #' @keywords internal
-so_att <- function(att, att_df, pi_i, wt) {
+so_att <- function(att, att_df, pi_i, wt, wt_fun) {
   z <- att_df[,att]
   localmean.var(z/pi_i, wt)
 }
